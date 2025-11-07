@@ -83,15 +83,7 @@ export const serviceType = defineType({
       to: [{type: 'briefForm'}],
       description: 'The form the customer will fill out *after* payment.',
     }),
-    defineField({
-      name: 'stripePaymentLink',
-      title: 'Stripe Payment Link (for One-Off)',
-      type: 'url',
-      description: 'Optional: For simple one-off payments without manual authorization.',
-      hidden: ({document}) => document?.serviceType !== 'oneOff',
-    }),
 
-    // --- THIS IS THE NEW FIELD ---
     defineField({
       name: 'stripeProductId',
       title: 'Stripe Product ID',
@@ -100,7 +92,6 @@ export const serviceType = defineType({
       readOnly: true, 
       hidden: ({document}) => document?.serviceType !== 'recurring',
     }),
-    // --- END NEW FIELD ---
 
     defineField({
       name: 'stripePriceId',
