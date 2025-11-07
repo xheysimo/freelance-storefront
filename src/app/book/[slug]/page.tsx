@@ -13,7 +13,6 @@ interface Service {
   projectBrief?: { 
     title: string
     fields: any[]
-    formspreeEndpoint: string 
   }
 }
 
@@ -28,8 +27,7 @@ const getServiceBySlug = async (slug: string): Promise<Service | null> => {
     stripePriceId,
     projectBrief->{
       title,
-      fields,
-      formspreeEndpoint
+      fields
     }
   }`
   

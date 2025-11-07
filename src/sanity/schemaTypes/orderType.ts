@@ -6,6 +6,7 @@ export const orderType = defineType({
   title: 'Order',
   type: 'document',
   fields: [
+    // ... customerName, customerEmail, service, oneOffStatus, subscriptionStatus...
     defineField({
       name: 'customerName',
       title: 'Customer Name',
@@ -26,7 +27,7 @@ export const orderType = defineType({
       readOnly: true,
     }),
     
-    // --- NEW: Status for One-Off Payments ---
+    // --- Status for One-Off Payments ---
     defineField({
       name: 'oneOffStatus',
       title: 'Status',
@@ -42,11 +43,10 @@ export const orderType = defineType({
         layout: 'radio',
       },
       initialValue: 'new',
-      // Show this field ONLY if it's a one-off order
       hidden: ({document}) => !document?.stripePaymentIntentId,
     }),
     
-    // --- NEW: Status for Recurring Subscriptions ---
+    // --- Status for Recurring Subscriptions ---
     defineField({
       name: 'subscriptionStatus',
       title: 'Status',
@@ -59,10 +59,10 @@ export const orderType = defineType({
         layout: 'radio',
       },
       initialValue: 'inProgress',
-      // Show this field ONLY if it's a subscription order
       hidden: ({document}) => !document?.stripeSubscriptionId,
     }),
 
+    // ... stripePaymentIntentId, stripeSubscriptionId ...
     defineField({
       name: 'stripePaymentIntentId',
       title: 'Stripe Payment Intent ID',
@@ -75,13 +75,35 @@ export const orderType = defineType({
       type: 'string',
       readOnly: true,
     }),
+
+    // --- Brief Information ---
     defineField({
       name: 'projectBrief',
-      title: 'Project Brief',
+      title: 'Project Brief (Text)',
       type: 'text',
       rows: 15,
       readOnly: true,
+      description: 'Text-based fields from the project brief form.',
     }),
+    
+    // --- NEW FIELD FOR FILES ---
+    defineField({
+      name: 'briefFiles',
+      title: 'Brief Files',
+      type: 'array',
+      of: [
+        {
+          title: 'Brief File',
+          type: 'file',
+          options: {
+            storeOriginalFilename: true,
+          },
+        },
+      ],
+      readOnly: true,
+    }),
+    // --- END NEW FIELD ---
+
     defineField({
       name: 'notes',
       title: 'Internal Notes',
@@ -97,17 +119,14 @@ export const orderType = defineType({
       subStatus: 'subscriptionStatus',
     },
     prepare({title, subtitle, oneOffStatus, subStatus}) {
-      // Use whichever status is active
       const status = oneOffStatus || subStatus
       
       const statusMap: Record<string, string> = {
-        // One-Off
         new: 'New (Authorized) 📦',
-        inProgress: 'In Progress 🏗️', // Keep this for subs
+        inProgress: 'In Progress 🏗️',
         completed: 'Completed (Ready to Capture) ✅',
         paid: 'Paid 💸',
         cancelled: 'Cancelled ❌',
-        // Sub
         SubinProgress: 'In Progress 🏗️',
       }
       return {

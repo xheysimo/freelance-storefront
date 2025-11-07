@@ -12,15 +12,6 @@ export const briefForm = defineType({
       type: 'string',
       description: 'e.g., "Web Development Project Brief"',
     }),
-    // --- NEW FIELD ---
-    defineField({
-      name: 'formspreeEndpoint',
-      title: 'Formspree Endpoint URL',
-      type: 'url',
-      description: 'The unique URL from Formspree for this specific form.',
-      validation: (Rule) => Rule.required(),
-    }),
-    // --- END NEW FIELD ---
     defineField({
       name: 'fields',
       title: 'Form Fields',

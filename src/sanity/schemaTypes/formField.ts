@@ -30,6 +30,7 @@ export const formField = defineType({
           {title: 'Text Input', value: 'text'},
           {title: 'Text Area', value: 'textarea'},
           {title: 'Email', value: 'email'},
+          {title: 'File Upload', value: 'file'}, // <-- ADD THIS
         ],
         layout: 'radio',
       },

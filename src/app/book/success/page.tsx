@@ -8,7 +8,6 @@ import ProjectBriefForm from '@/components/checkout/ProjectBriefForm'
 interface ProjectBrief {
   title: string
   fields: any[]
-  formspreeEndpoint: string 
 }
 
 interface OrderCreationResult {
@@ -44,8 +43,7 @@ async function createSubscriptionOrder(
         service->{ 
           projectBrief->{
             title,
-            fields,
-            formspreeEndpoint
+            fields
           }
         } 
       }`,
@@ -67,8 +65,7 @@ async function createSubscriptionOrder(
         _id,
         projectBrief->{ 
           title,
-          fields,
-          formspreeEndpoint
+          fields
         } 
       }`, 
       { slug: slug }

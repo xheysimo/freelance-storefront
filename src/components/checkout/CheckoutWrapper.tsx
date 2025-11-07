@@ -17,7 +17,6 @@ const stripePromise = loadStripe(
 interface ProjectBrief {
   title: string
   fields: any[]
-  formspreeEndpoint: string 
 }
 
 // 1. Update props to accept all new data from the page
