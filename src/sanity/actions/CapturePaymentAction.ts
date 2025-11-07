@@ -2,10 +2,9 @@
 import { DocumentActionDescription, DocumentActionProps } from 'sanity'
 import { useState } from 'react'
 
-// --- FIX: Updated return type ---
 export function CapturePaymentAction(props: DocumentActionProps): DocumentActionDescription | null {
   const { type, published } = props
-  const doc = published as any // Get the published document
+  const doc = published as any 
   const [isCapturing, setIsCapturing] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -14,10 +13,10 @@ export function CapturePaymentAction(props: DocumentActionProps): DocumentAction
   if (
     type !== 'order' ||
     !doc ||
-    doc.status !== 'completed' ||
-    !doc.stripePaymentIntentId
+    !doc.stripePaymentIntentId || // Must be a one-off
+    doc.oneOffStatus !== 'completed' // <-- FIX
   ) {
-    return null // --- This is now valid
+    return null 
   }
 
   async function onHandle() {
@@ -29,7 +28,6 @@ export function CapturePaymentAction(props: DocumentActionProps): DocumentAction
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Send your secret to authenticate the request
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SANITY_WEBHOOK_SECRET}`,
         },
         body: JSON.stringify({
@@ -41,12 +39,11 @@ export function CapturePaymentAction(props: DocumentActionProps): DocumentAction
       const data = await res.json()
       if (res.ok) {
         setMessage('Payment Captured Successfully! Status set to Paid.')
-        // Force a re-fetch of the document
         props.onComplete() 
       } else {
         setMessage(`Error: ${data.error}`)
       }
-    } catch (err: any) { // --- FIX: Cast err to any ---
+    } catch (err: any) { 
       setMessage(`Error: ${err.message}`)
     }
     setIsCapturing(false)

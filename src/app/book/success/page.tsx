@@ -4,6 +4,7 @@ import { sanityMutationClient } from '@/sanity/lib/mutationClient'
 import Stripe from 'stripe'
 import ProjectBriefForm from '@/components/checkout/ProjectBriefForm' 
 
+// ... (interface definitions are unchanged) ...
 interface ProjectBrief {
   title: string
   fields: any[]
@@ -36,7 +37,6 @@ async function createSubscriptionOrder(
     
     const subscriptionId = session.subscription as string;
 
-    // --- IDEMPOTENCY FIX: START ---
     // 1. Check if an order with this subscription ID already exists
     const existingOrder = await sanityMutationClient.fetch<any>(
       `*[_type == "order" && stripeSubscriptionId == $subscriptionId][0]{ 
@@ -60,8 +60,6 @@ async function createSubscriptionOrder(
         projectBrief: existingOrder.service?.projectBrief || null
       }
     }
-    // --- IDEMPOTENCY FIX: END ---
-
 
     // 3. If no existing order, fetch the service to create a new one
     const service = await sanityMutationClient.fetch<any>(
@@ -73,7 +71,7 @@ async function createSubscriptionOrder(
           formspreeEndpoint
         } 
       }`, 
-      { slug: slug } // Use the slug from the URL param
+      { slug: slug }
     )
 
     if (!service) {
@@ -87,8 +85,8 @@ async function createSubscriptionOrder(
         _type: 'reference',
         _ref: service._id,
       },
-      stripeSubscriptionId: subscriptionId, // Use the variable
-      status: 'inProgress',
+      stripeSubscriptionId: subscriptionId,
+      subscriptionStatus: 'inProgress', // <-- FIX
       customerName: session.customer_details.name || 'N/A',
       customerEmail: session.customer_details.email || 'N/A',
       projectBrief: service.projectBrief 
@@ -119,7 +117,6 @@ export default async function BookingSuccessPage({
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
   
-  // --- searchParams FIX ---
   const resolvedSearchParams = await searchParams;
 
   const sessionId = resolvedSearchParams?.session_id as string | undefined
@@ -156,7 +153,7 @@ export default async function BookingSuccessPage({
       <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
         Your subscription is all set up.
       </p>
-      <p className="mt-2 text-gray-500">
+      <p className="mt-2 text-sm text-gray-500">
         You will receive a confirmation email shortly.
       </p>
       <Link

@@ -1,12 +1,11 @@
 // src/components/checkout/CheckoutForm.tsx
 'use client'
 
-import { FormEvent, useState, ChangeEvent } from 'react' // <-- 1. Import ChangeEvent
+import { FormEvent, useState, ChangeEvent } from 'react'
 import {
   useStripe,
   useElements,
   CardElement,
-  // --- FIX: Removed EmailElement ---
 } from '@stripe/react-stripe-js'
 
 export default function CheckoutForm({
@@ -23,7 +22,8 @@ export default function CheckoutForm({
 
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [email, setEmail] = useState('') // <-- This state is now used by our input
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('') // <-- ADDED NAME STATE
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -31,8 +31,9 @@ export default function CheckoutForm({
       return // Stripe.js has not yet loaded.
     }
 
-    if (!email) {
-      setMessage('Please enter your email.')
+    // --- UPDATED VALIDATION ---
+    if (!email || !name) {
+      setMessage('Please enter your name and email.')
       return
     }
 
@@ -45,7 +46,8 @@ export default function CheckoutForm({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         amount: amount * 100, 
-        email: email, // <-- Send email to API
+        email: email,
+        name: name, // <-- SEND NAME TO API
       }),
     })
 
@@ -71,7 +73,10 @@ export default function CheckoutForm({
       {
         payment_method: {
           card: cardElement,
-          billing_details: { email: email }, // <-- Add email to billing
+          billing_details: { 
+            email: email,
+            name: name, // <-- ADD NAME TO BILLING
+          },
         },
       }
     )
@@ -104,7 +109,25 @@ export default function CheckoutForm({
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
-      {/* --- FIX: Replaced EmailElement with standard input --- */}
+      
+      {/* --- ADDED NAME FIELD --- */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Name
+        </label>
+        <div className="mt-1">
+          <input
+            type="text"
+            value={name}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            placeholder="Your Name"
+            required
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm p-3"
+          />
+        </div>
+      </div>
+
+      {/* --- Email Field --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Email
@@ -113,7 +136,6 @@ export default function CheckoutForm({
           <input
             type="email"
             value={email}
-            // --- FIX: Added type to 'e' ---
             onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             placeholder="your@email.com"
             required
@@ -121,8 +143,8 @@ export default function CheckoutForm({
           />
         </div>
       </div>
-      {/* --- END FIX --- */}
 
+      {/* --- Card Field --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Card Details
@@ -132,7 +154,7 @@ export default function CheckoutForm({
             options={{
               style: {
                 base: {
-                  color: '#ffffff', // Change color based on dark/light mode
+                  color: '#ffffff', // Will need JS to toggle for dark/light mode
                   fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
                   fontSmoothing: 'antialiased',
                   fontSize: '16px',

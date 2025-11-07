@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         _ref: serviceId,
       },
       stripePaymentIntentId: paymentIntentId,
-      status: 'new',
+      oneOffStatus: 'new', // <-- FIX
       customerName: customer.name || 'N/A',
       customerEmail: customer.email || 'N/A',
     }
