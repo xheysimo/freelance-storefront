@@ -22,26 +22,28 @@ interface ProjectBrief {
 
 // 1. Update props to accept all new data from the page
 export default function CheckoutWrapper({
-  serviceId, // <-- 1. Get serviceId
+  serviceId, 
   serviceName,
   price,
   priceSuffix,
   serviceType,
   stripePriceId,
   projectBrief,
+  serviceSlug, // <-- 1. ACCEPT THE SLUG
 }: {
-  serviceId: string // <-- 1. Get serviceId
+  serviceId: string 
   serviceName: string
   price: number
   priceSuffix: string
   serviceType: 'oneOff' | 'recurring'
   stripePriceId?: string
   projectBrief?: ProjectBrief
+  serviceSlug: string // <-- 1. ACCEPT THE SLUG
 }) {
   const [isAuthorized, setIsAuthorized] = useState(false)
-  const [orderId, setOrderId] = useState<string | null>(null) // <-- 2. Add state for orderId
+  const [orderId, setOrderId] = useState<string | null>(null) 
 
-  // 3. Conditionally render the correct checkout header
+  // ... (renderHeader function is unchanged) ...
   const renderHeader = () => {
     if (isAuthorized) {
       return null // The ProjectBriefForm renders its own header
@@ -76,11 +78,11 @@ export default function CheckoutWrapper({
   // 4. Conditionally render the correct form/button
   const renderForm = () => {
     // State 1: Payment is authorized, show the project brief form
-    if (isAuthorized && orderId) { // <-- 3. Check for orderId
+    if (isAuthorized && orderId) { 
       return projectBrief ? (
         <ProjectBriefForm 
           briefData={projectBrief} 
-          orderId={orderId} // <-- 4. Pass orderId
+          orderId={orderId} 
         /> 
       ) : (
         <div className="text-center">
@@ -101,18 +103,18 @@ export default function CheckoutWrapper({
           priceId={stripePriceId!}
           price={price}
           priceSuffix={priceSuffix}
+          serviceSlug={serviceSlug} // <-- 2. PASS SLUG TO SUB FORM
         />
       )
     }
 
     // State 3: It's a one-off service, show the standard authorization form
-    // We must wrap this in the <Elements> provider
     return (
       <Elements stripe={stripePromise}>
         <CheckoutForm 
           amount={price} 
-          serviceId={serviceId} // <-- 5. Pass serviceId
-          onSuccess={(newOrderId) => { // <-- 6. Update onSuccess to receive orderId
+          serviceId={serviceId} 
+          onSuccess={(newOrderId) => { 
             setOrderId(newOrderId)
             setIsAuthorized(true)
           }}

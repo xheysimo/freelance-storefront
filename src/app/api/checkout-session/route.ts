@@ -10,10 +10,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
 
 export async function POST(request: Request) {
   try {
-    const { priceId } = await request.json()
+    // 1. GET BOTH priceId AND serviceSlug
+    const { priceId, serviceSlug } = await request.json()
 
-    if (!priceId) {
-      return NextResponse.json({ error: 'priceId is required' }, { status: 400 })
+    if (!priceId || !serviceSlug) {
+      return NextResponse.json({ error: 'priceId and serviceSlug are required' }, { status: 400 })
     }
 
     // Create a Stripe Checkout Session for a subscription
@@ -26,8 +27,8 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      // {CHECKOUT_SESSION_ID} is a Stripe template variable
-      success_url: `${siteUrl}/book/success?session_id={CHECKOUT_SESSION_ID}`,
+      // 2. ADD THE SLUG TO THE SUCCESS URL
+      success_url: `${siteUrl}/book/success?session_id={CHECKOUT_SESSION_ID}&slug=${serviceSlug}`,
       cancel_url: `${siteUrl}/`,
     })
 

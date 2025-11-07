@@ -4,7 +4,7 @@ import CheckoutWrapper from "@/components/checkout/CheckoutWrapper"
 import { notFound } from 'next/navigation'
 
 interface Service {
-  _id: string // <-- 1. ADD THIS
+  _id: string 
   title: string
   priceGBP: number
   priceSuffix: string
@@ -20,7 +20,7 @@ interface Service {
 // Update the query to fetch all necessary fields
 const getServiceBySlug = async (slug: string): Promise<Service | null> => {
   const query = `*[_type == "service" && slug.current == $slug][0]{
-    _id, // <-- 2. FETCH THIS
+    _id,
     title,
     priceGBP,
     priceSuffix,
@@ -63,13 +63,14 @@ export default async function BookServicePage({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-12">
       <CheckoutWrapper 
-        serviceId={service._id} // <-- 3. PASS THE ID
+        serviceId={service._id} 
         serviceName={service.title} 
         price={service.priceGBP} 
         priceSuffix={service.priceSuffix}
         serviceType={service.serviceType}
         stripePriceId={service.stripePriceId}
         projectBrief={service.projectBrief}
+        serviceSlug={resolvedParams.slug} // <-- 1. PASS THE SLUG
       />
     </main>
   )

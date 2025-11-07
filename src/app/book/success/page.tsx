@@ -1,48 +1,83 @@
 // src/app/book/success/page.tsx
 import Link from 'next/link'
 import { sanityMutationClient } from '@/sanity/lib/mutationClient'
-import { sanityFetch } from '@/sanity/lib/live'
 import Stripe from 'stripe'
+import ProjectBriefForm from '@/components/checkout/ProjectBriefForm' 
 
-// This page becomes a Server Component to handle logic
-async function createSubscriptionOrder(sessionId: string) {
-  if (!sessionId) return
+interface ProjectBrief {
+  title: string
+  fields: any[]
+  formspreeEndpoint: string 
+}
+
+interface OrderCreationResult {
+  orderId: string | null
+  projectBrief: ProjectBrief | null
+}
+
+async function createSubscriptionOrder(
+  sessionId: string, 
+  slug: string
+): Promise<OrderCreationResult> {
+  if (!sessionId || !slug) {
+    return { orderId: null, projectBrief: null }
+  }
   
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   try {
-    // 1. Get session data from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['line_items.data.price.product'],
     })
     
-    // --- FIX: Added checks for line_items and customer_details ---
-    if (!session || !session.subscription || !session.customer_details || !session.line_items) {
+    if (!session || !session.subscription || !session.customer_details) {
       throw new Error('Could not retrieve complete session details.')
     }
+    
+    const subscriptionId = session.subscription as string;
 
-    // 2. Get the product and find the matching Sanity service
-    // --- FIX: Added check for price ---
-    const price = session.line_items.data[0]?.price
-    if (!price) {
-      throw new Error('Could not find price data in session.')
+    // --- IDEMPOTENCY FIX: START ---
+    // 1. Check if an order with this subscription ID already exists
+    const existingOrder = await sanityMutationClient.fetch<any>(
+      `*[_type == "order" && stripeSubscriptionId == $subscriptionId][0]{ 
+        _id,
+        service->{ 
+          projectBrief->{
+            title,
+            fields,
+            formspreeEndpoint
+          }
+        } 
+      }`,
+      { subscriptionId: subscriptionId }
+    );
+
+    // 2. If it exists, return the existing orderId and brief
+    if (existingOrder) {
+      console.log(`Found existing order: ${existingOrder._id}`);
+      return {
+        orderId: existingOrder._id,
+        projectBrief: existingOrder.service?.projectBrief || null
+      }
     }
+    // --- IDEMPOTENCY FIX: END ---
 
-    const product = price.product as Stripe.Product
-    const sanitySlug = product.metadata.sanity_slug
 
-    if (!sanitySlug) {
-      throw new Error('Product is missing sanity_slug metadata.')
-    }
-
-    // 3. Find the Sanity service
-    const service = await sanityFetch<any>({ 
-      query: `*[_type == "service" && slug.current == $slug][0]{ _id }`, 
-      params: { slug: sanitySlug } 
-    }).then(res => res.data)
+    // 3. If no existing order, fetch the service to create a new one
+    const service = await sanityMutationClient.fetch<any>(
+      `*[_type == "service" && slug.current == $slug][0]{ 
+        _id,
+        projectBrief->{ 
+          title,
+          fields,
+          formspreeEndpoint
+        } 
+      }`, 
+      { slug: slug } // Use the slug from the URL param
+    )
 
     if (!service) {
-      throw new Error(`Could not find service with slug: ${sanitySlug}`)
+      throw new Error(`Could not find service with slug: ${slug}`)
     }
 
     // 4. Create the Sanity Order
@@ -52,35 +87,67 @@ async function createSubscriptionOrder(sessionId: string) {
         _type: 'reference',
         _ref: service._id,
       },
-      stripeSubscriptionId: session.subscription as string,
-      status: 'inProgress', // Subscriptions are active immediately
+      stripeSubscriptionId: subscriptionId, // Use the variable
+      status: 'inProgress',
       customerName: session.customer_details.name || 'N/A',
       customerEmail: session.customer_details.email || 'N/A',
-      projectBrief: 'N/A - Recurring Subscription',
+      projectBrief: service.projectBrief 
+        ? 'Pending submission...' 
+        : 'N/A - Recurring Subscription',
     }
 
-    // --- FIX: Changed createOrReplace to create ---
-    await sanityMutationClient.create(doc)
-    console.log(`Successfully created order for subscription: ${session.subscription}`)
+    const newOrder = await sanityMutationClient.create(doc) 
+    console.log(`Successfully created order ${newOrder._id} for subscription: ${subscriptionId}`)
+
+    return {
+      orderId: newOrder._id,
+      projectBrief: service.projectBrief || null
+    }
 
   } catch (err: any) {
     console.error(`Error in createSubscriptionOrder: ${err.message}`)
-    // We don't want to block the user, so we just log the error
+    return { orderId: null, projectBrief: null } 
   }
 }
 
+/**
+ * Page Component
+ */
 export default async function BookingSuccessPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
   
-  // Run the server-side logic
-  const sessionId = searchParams?.session_id as string | undefined
-  if (sessionId) {
-    await createSubscriptionOrder(sessionId)
+  // --- searchParams FIX ---
+  const resolvedSearchParams = await searchParams;
+
+  const sessionId = resolvedSearchParams?.session_id as string | undefined
+  const slug = resolvedSearchParams?.slug as string | undefined 
+  
+  let orderResult: OrderCreationResult = { orderId: null, projectBrief: null };
+
+  if (sessionId && slug) {
+    orderResult = await createSubscriptionOrder(sessionId, slug)
   }
 
+  const { orderId, projectBrief } = orderResult;
+
+  // Show brief form if one is associated with the order
+  if (orderId && projectBrief) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-12">
+        <div className="w-full max-w-md">
+          <ProjectBriefForm 
+            briefData={projectBrief} 
+            orderId={orderId} 
+          />
+        </div>
+      </main>
+    )
+  }
+
+  // Fallback "Thank You" message
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-12 text-center">
       <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">

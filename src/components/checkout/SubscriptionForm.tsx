@@ -7,10 +7,12 @@ export default function SubscriptionForm({
   priceId,
   price,
   priceSuffix,
+  serviceSlug, // <-- 1. ACCEPT THE SLUG
 }: {
   priceId: string
   price: number
   priceSuffix: string
+  serviceSlug: string // <-- 1. ACCEPT THE SLUG
 }) {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -24,7 +26,8 @@ export default function SubscriptionForm({
       const res = await fetch('/api/checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId }),
+        // 2. SEND THE SLUG IN THE BODY
+        body: JSON.stringify({ priceId, serviceSlug }), 
       })
 
       const { url, error } = await res.json()
@@ -47,6 +50,7 @@ export default function SubscriptionForm({
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md">
+      {/* ... (form JSX is unchanged) ... */}
       <div className="text-center">
         <span className="text-4xl font-bold text-gray-900 dark:text-white">
           £{price}
