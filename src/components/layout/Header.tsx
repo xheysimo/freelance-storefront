@@ -5,7 +5,7 @@ import Link from 'next/link'
 const navLinks = [
   { name: 'Services', href: '/#services' },
   { name: 'Portfolio', href: '/#portfolio' },
-  { name: 'Contact', href: 'mailto:your-email@example.com' }, // Simple mailto link for now
+  { name: 'Contact', href: '/contact' }, // <-- UPDATED
 ]
 
 export default function Header() {
