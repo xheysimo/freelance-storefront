@@ -6,7 +6,7 @@ import { Elements } from '@stripe/react-stripe-js'
 import CheckoutForm from './CheckoutForm'
 import { useState } from 'react'
 import ProjectBriefForm from './ProjectBriefForm' 
-import SubscriptionForm from './SubscriptionForm' // <-- 1. Import new SubscriptionForm
+import SubscriptionForm from './SubscriptionForm'
 
 // Load Stripe with your public key
 const stripePromise = loadStripe(
@@ -20,8 +20,9 @@ interface ProjectBrief {
   formspreeEndpoint: string 
 }
 
-// 2. Update props to accept all new data from the page
+// 1. Update props to accept all new data from the page
 export default function CheckoutWrapper({
+  serviceId, // <-- 1. Get serviceId
   serviceName,
   price,
   priceSuffix,
@@ -29,6 +30,7 @@ export default function CheckoutWrapper({
   stripePriceId,
   projectBrief,
 }: {
+  serviceId: string // <-- 1. Get serviceId
   serviceName: string
   price: number
   priceSuffix: string
@@ -37,6 +39,7 @@ export default function CheckoutWrapper({
   projectBrief?: ProjectBrief
 }) {
   const [isAuthorized, setIsAuthorized] = useState(false)
+  const [orderId, setOrderId] = useState<string | null>(null) // <-- 2. Add state for orderId
 
   // 3. Conditionally render the correct checkout header
   const renderHeader = () => {
@@ -73,9 +76,12 @@ export default function CheckoutWrapper({
   // 4. Conditionally render the correct form/button
   const renderForm = () => {
     // State 1: Payment is authorized, show the project brief form
-    if (isAuthorized) {
-      return projectBrief && projectBrief.formspreeEndpoint ? (
-        <ProjectBriefForm briefData={projectBrief} /> 
+    if (isAuthorized && orderId) { // <-- 3. Check for orderId
+      return projectBrief ? (
+        <ProjectBriefForm 
+          briefData={projectBrief} 
+          orderId={orderId} // <-- 4. Pass orderId
+        /> 
       ) : (
         <div className="text-center">
           <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -92,7 +98,7 @@ export default function CheckoutWrapper({
     if (serviceType === 'recurring') {
       return (
         <SubscriptionForm
-          priceId={stripePriceId!} // We've already checked this on the page
+          priceId={stripePriceId!}
           price={price}
           priceSuffix={priceSuffix}
         />
@@ -105,7 +111,11 @@ export default function CheckoutWrapper({
       <Elements stripe={stripePromise}>
         <CheckoutForm 
           amount={price} 
-          onSuccess={() => setIsAuthorized(true)}
+          serviceId={serviceId} // <-- 5. Pass serviceId
+          onSuccess={(newOrderId) => { // <-- 6. Update onSuccess to receive orderId
+            setOrderId(newOrderId)
+            setIsAuthorized(true)
+          }}
         />
       </Elements>
     )

@@ -22,7 +22,7 @@ interface ProjectWithTestimonial extends Project {
 interface Service {
   _id: string
   title: string
-  summary: string // <-- 1. Added summary
+  summary: string
   priceGBP: number
   priceSuffix: string
   details: any
@@ -36,11 +36,10 @@ interface Service {
   relatedProjects: ProjectWithTestimonial[]
 }
 
-// 2. Update the query to fetch the 'summary'
 const SERVICE_QUERY = `*[_type == "service" && slug.current == $slug][0]{
   _id,
   title,
-  summary, // <-- Fetched summary
+  summary,
   priceGBP,
   priceSuffix,
   details,
@@ -67,7 +66,7 @@ const SERVICE_QUERY = `*[_type == "service" && slug.current == $slug][0]{
   }
 }`
 
-// Generate metadata (unchanged, but needs resolvedParams)
+// Generate metadata
 export async function generateMetadata({
   params,
 }: {
@@ -89,7 +88,7 @@ export async function generateMetadata({
   }
 }
 
-// 4. The NEW page component
+// The page component
 export default async function ServicePage({
   params,
 }: {
@@ -139,7 +138,8 @@ export default async function ServicePage({
                 <ul className="not-prose list-none p-0">
                   {service.benefits.map((benefit) => (
                     <li key={benefit._key} className="flex gap-4 mb-4">
-                      <CheckIcon className="h-6 w-6 text-indigo-500 flex-shrink-0" />
+                      {/* --- FIX: Applied lint suggestion --- */}
+                      <CheckIcon className="h-6 w-6 text-indigo-500 shrink-0" />
                       <div>
                         <strong className="block">{benefit.title}</strong>
                         <span className="text-gray-600 dark:text-gray-400">
@@ -189,7 +189,7 @@ export default async function ServicePage({
       {service.relatedProjects && service.relatedProjects.length > 0 && (
         <Portfolio
           projects={service.relatedProjects}
-          title="Case Studies For This Service" // <-- Passing the new title
+          title="Case Studies For This Service"
         />
       )}
 
@@ -197,7 +197,7 @@ export default async function ServicePage({
       {relatedTestimonials.length > 0 && (
         <Testimonials
           testimonials={relatedTestimonials}
-          title="Kind Words From Happy Clients" // <-- Passing the new title
+          title="Kind Words From Happy Clients"
         />
       )}
     </main>

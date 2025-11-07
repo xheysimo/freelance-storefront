@@ -1,28 +1,40 @@
 'use client'
 
-/**
- * This configuration is used to for the Sanity Studio that’s mounted on the `\src\app\studio\[[...tool]]\page.tsx` route
- */
-
-import {visionTool} from '@sanity/vision'
-import {defineConfig} from 'sanity'
-import {structureTool} from 'sanity/structure'
-
-// Go to https://www.sanity.io/docs/api-versioning to learn how API versioning works
-import {apiVersion, dataset, projectId} from './src/sanity/env'
-import {schema} from './src/sanity/schemaTypes'
-import {structure} from './src/sanity/structure'
+// sanity.config.ts
+import { defineConfig } from 'sanity'
+import { structureTool } from 'sanity/structure'
+import { visionTool } from '@sanity/vision' // A common plugin, kept for completeness
+import { schema } from './src/sanity/schemaTypes'
+import { structure } from './src/sanity/structure'
+import { CapturePaymentAction } from './src/sanity/actions/CapturePaymentAction'
+import { apiVersion, dataset, projectId } from './src/sanity/env'
 
 export default defineConfig({
-  basePath: '/studio',
+  basePath: '/studio', // Your studio's base path
   projectId,
   dataset,
-  // Add and edit the content schema in the './sanity/schemaTypes' folder
-  schema,
+
   plugins: [
-    structureTool({structure}),
-    // Vision is for querying with GROQ from inside the Studio
-    // https://www.sanity.io/docs/the-vision-plugin
-    visionTool({defaultApiVersion: apiVersion}),
+    structureTool({
+      structure,
+    }),
+    // Add other plugins like visionTool if you use them
+    visionTool({ defaultApiVersion: apiVersion }),
   ],
+
+  schema: {
+    types: schema.types,
+  },
+
+  document: {
+    // This is the new, crucial part
+    actions: (prev, { schemaType }) => {
+      // If the document type is 'order', add our custom action
+      if (schemaType === 'order') {
+        return [CapturePaymentAction, ...prev]
+      }
+      // Otherwise, return the default actions
+      return prev
+    },
+  },
 })

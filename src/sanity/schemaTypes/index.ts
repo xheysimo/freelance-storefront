@@ -6,21 +6,23 @@ import { seoType } from './seoType'
 import { serviceType } from './serviceType'
 import { projectType } from './projectType'
 import { testimonialType } from './testimonialType'
-import { briefForm } from './briefForm'     // <-- IMPORT
-import { formField } from './formField'     // <-- IMPORT
+import { briefForm } from './briefForm'
+import { formField } from './formField'
+import { orderType } from './orderType'     // <-- 1. IMPORT
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
     // Documents
+    orderType,                            // <-- 2. ADD
     serviceType,
     projectType,
     testimonialType,
-    briefForm,                            // <-- ADD
+    briefForm,
 
     // Objects
     blockContentType,
     featureType,
     seoType,
-    formField,                            // <-- ADD
+    formField,
   ],
 }

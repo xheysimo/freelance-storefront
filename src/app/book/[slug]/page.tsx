@@ -4,11 +4,12 @@ import CheckoutWrapper from "@/components/checkout/CheckoutWrapper"
 import { notFound } from 'next/navigation'
 
 interface Service {
+  _id: string // <-- 1. ADD THIS
   title: string
   priceGBP: number
-  priceSuffix: string // <-- Added
-  serviceType: 'oneOff' | 'recurring' // <-- Added
-  stripePriceId?: string // <-- Added
+  priceSuffix: string
+  serviceType: 'oneOff' | 'recurring'
+  stripePriceId?: string
   projectBrief?: { 
     title: string
     fields: any[]
@@ -19,6 +20,7 @@ interface Service {
 // Update the query to fetch all necessary fields
 const getServiceBySlug = async (slug: string): Promise<Service | null> => {
   const query = `*[_type == "service" && slug.current == $slug][0]{
+    _id, // <-- 2. FETCH THIS
     title,
     priceGBP,
     priceSuffix,
@@ -52,7 +54,7 @@ export default async function BookServicePage({
     notFound()
   }
 
-  // A recurring service MUST have a Stripe Price ID
+   // A recurring service MUST have a Stripe Price ID
   if (service.serviceType === 'recurring' && !service.stripePriceId) {
     // You can render a more helpful error page if you like
     throw new Error('This recurring service is not configured with a Stripe Price ID.')
@@ -61,6 +63,7 @@ export default async function BookServicePage({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-12">
       <CheckoutWrapper 
+        serviceId={service._id} // <-- 3. PASS THE ID
         serviceName={service.title} 
         price={service.priceGBP} 
         priceSuffix={service.priceSuffix}

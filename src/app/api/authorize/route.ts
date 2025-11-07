@@ -1,24 +1,32 @@
 // src/app/api/authorize/route.ts
 import { NextResponse } from 'next/server'
-// Make sure to use the 'stripe' package, not '@stripe/stripe-js'
 import Stripe from 'stripe'
 
-// Initialise Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(request: Request) {
   try {
-    const { amount } = await request.json()
+    const { amount, email } = await request.json()
 
-    // Create a PaymentIntent with `capture_method: 'manual'`
+    // 1. Find or create a Stripe Customer
+    let customer = await stripe.customers.list({ email: email, limit: 1 }).then(list => list.data[0]);
+    if (!customer) {
+      customer = await stripe.customers.create({ email: email });
+    }
+
+    // 2. Create a PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: 'gbp',
-      capture_method: 'manual', // This is the key!
+      capture_method: 'manual',
+      customer: customer.id, // <-- Link to the customer
     })
 
-    // Return the client_secret to the frontend
-    return NextResponse.json({ clientSecret: paymentIntent.client_secret })
+    // 3. Return the client_secret AND the id
+    return NextResponse.json({ 
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id // <-- We need this
+    })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

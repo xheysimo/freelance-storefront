@@ -13,53 +13,48 @@ interface FormField {
   required?: boolean
 }
 
-// 1. Update prop type to include the endpoint
+// 1. Update prop type to accept orderId
 type ProjectBriefFormProps = {
   briefData: {
     title: string
     fields: FormField[]
-    formspreeEndpoint: string // <-- It's now part of this prop
+    // formspreeEndpoint is no longer used
   }
+  orderId: string // <-- 1. Get the orderId
 }
 
-export default function ProjectBriefForm({ briefData }: ProjectBriefFormProps) {
+export default function ProjectBriefForm({ briefData, orderId }: ProjectBriefFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   
-  // 2. Use the endpoint from the prop
-  const FORMSPREE_ENDPOINT = briefData.formspreeEndpoint
-
-  // 3. Check if the endpoint was provided from Sanity
-  if (!FORMSPREE_ENDPOINT) {
-    return (
-      <div className="text-center text-red-600 dark:text-red-400">
-        Form endpoint is not configured for this service. Please contact support.
-      </div>
-    )
-  }
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setIsSubmitting(true)
     setError('')
     
     const formData = new FormData(event.currentTarget)
+    // Convert FormData to a plain object
+    const briefData = Object.fromEntries(formData.entries());
     
     try {
-      // 4. Submit to the dynamic endpoint
-      const response = await fetch(FORMSPREE_ENDPOINT, {
+      // 2. Submit to YOUR new endpoint
+      const response = await fetch('/api/submit-brief', {
         method: 'POST',
-        body: formData,
         headers: {
-          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ 
+          orderId: orderId, // <-- 3. Send the orderId
+          briefData: briefData  // <-- 4. Send the form data object
+        }),
       })
       
       if (response.ok) {
         setIsSubmitted(true)
       } else {
-        setError('There was an error submitting your form. Please try again.')
+        const { error } = await response.json()
+        setError(`There was an error: ${error}`)
       }
     } catch (err) {
       setError('An unknown error occurred. Please check your connection.')
