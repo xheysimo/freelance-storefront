@@ -1,15 +1,22 @@
+// src/sanity/structure.ts
 import type {StructureResolver} from 'sanity/structure'
 
-// https://www.sanity.io/docs/structure-builder-cheat-sheet
 export const structure: StructureResolver = (S) =>
   S.list()
-    .title('Blog')
+    .title('Content')
     .items([
-      S.documentTypeListItem('post').title('Posts'),
-      S.documentTypeListItem('category').title('Categories'),
-      S.documentTypeListItem('author').title('Authors'),
+      // Our singleton type
+      S.documentTypeListItem('service').title('Services'),
+      S.documentTypeListItem('project').title('Projects'),
+      S.documentTypeListItem('testimonial').title('Testimonials'),
+      
       S.divider(),
+
+      // Regular document types
       ...S.documentTypeListItems().filter(
-        (item) => item.getId() && !['post', 'category', 'author'].includes(item.getId()!),
+        (item) =>
+          !['service', 'project', 'testimonial'].includes(
+            item.getId() || ''
+          )
       ),
     ])
