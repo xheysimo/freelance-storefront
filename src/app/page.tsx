@@ -3,6 +3,7 @@ import { sanityFetch } from "@/sanity/lib/live"
 import { Key } from "react"
 import Link from "next/link"
 import Testimonials, { Testimonial } from "@/components/testimonials/Testimonials"
+import Portfolio, { Project } from "@/components/portfolio/Portfolio" // <-- 1. Import new component
 
 interface Service {
   _id: Key
@@ -14,7 +15,7 @@ interface Service {
   slug: string
 }
 
-// Define the GROQ queries
+// 2. Define the GROQ query for projects
 const SERVICES_QUERY = `*[_type == "service"]{
     _id,
     title,
@@ -33,22 +34,34 @@ const TESTIMONIALS_QUERY = `*[_type == "testimonial"]{
   quote
 }`
 
-// --- FIX 1: Use <any> and cast back ---
+const PROJECTS_QUERY = `*[_type == "project"]{
+  _id,
+  title,
+  clientName,
+  coverImage,
+  summary,
+  liveUrl,
+  githubUrl,
+  "slug": slug.current
+}` //
+
+// 3. Fetch all data in parallel
 async function getPageData() {
-  const [servicesResult, testimonialsResult] = await Promise.all([
-    sanityFetch<any>({ query: SERVICES_QUERY }), // Fetch as any
-    sanityFetch<any>({ query: TESTIMONIALS_QUERY }), // Fetch as any
+  const [servicesResult, testimonialsResult, projectsResult] = await Promise.all([
+    sanityFetch<any>({ query: SERVICES_QUERY }),
+    sanityFetch<any>({ query: TESTIMONIALS_QUERY }),
+    sanityFetch<any>({ query: PROJECTS_QUERY }), // <-- 4. Add project fetch
   ])
   return {
-    // Cast back to the correct types
     services: servicesResult.data as Service[],
     testimonials: testimonialsResult.data as Testimonial[],
+    projects: projectsResult.data as Project[], // <-- 5. Return projects
   }
 }
-// --- END OF FIX 1 ---
 
 export default async function Home() {
-  const { services, testimonials } = await getPageData()
+  // 6. Get all data, including projects
+  const { services, testimonials, projects } = await getPageData()
 
   return (
     <main className="flex min-h-screen flex-col items-center">
@@ -63,12 +76,9 @@ export default async function Home() {
       </div>
 
       {/* Services Section */}
-      <div className="w-full max-w-5xl px-6 lg:px-8">
+      <div id="services" className="w-full max-w-5xl px-6 lg:px-8 pt-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          
-          {/* --- FIX 2: Add 'Service' type to the map parameter --- */}
           {services.map((service: Service) => (
-          // --- END OF FIX 2 ---
             <div 
               key={service._id} 
               className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-lg bg-white dark:bg-gray-900"
@@ -89,7 +99,7 @@ export default async function Home() {
               </div>
               
               <Link
-                href={`/book/${service.slug}`}
+                href={`/services/${service.slug}`} // <-- NEW LINK
                 className="mt-8 block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
               >
                 {service.ctaText}
@@ -99,7 +109,12 @@ export default async function Home() {
         </div>
       </div>
       
-      {/* Render the new Testimonials component */}
+      {/* 7. Render the new Portfolio component */}
+      <div id="portfolio" className="w-full"> {/* <-- Added this wrapper */}
+          <Portfolio projects={projects} />
+      </div>
+
+      {/* Render the Testimonials component */}
       <Testimonials testimonials={testimonials} />
     </main>
   )

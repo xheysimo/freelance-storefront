@@ -77,15 +77,37 @@ export const serviceType = defineType({
       initialValue: 'Get Started',
     }),
     defineField({
+      name: 'projectBrief',
+      title: 'Project Brief Form',
+      type: 'reference',
+      to: [{type: 'briefForm'}],
+      description: 'The form the customer will fill out *after* payment.',
+    }),
+    defineField({
       name: 'stripePaymentLink',
       title: 'Stripe Payment Link (for One-Off)',
       type: 'url',
+      description: 'Optional: For simple one-off payments without manual authorization.',
       hidden: ({document}) => document?.serviceType !== 'oneOff',
     }),
+
+    // --- THIS IS THE NEW FIELD ---
+    defineField({
+      name: 'stripeProductId',
+      title: 'Stripe Product ID',
+      type: 'string',
+      description: 'Auto-synced: The ID of the corresponding Stripe Product.',
+      readOnly: true, 
+      hidden: ({document}) => document?.serviceType !== 'recurring',
+    }),
+    // --- END NEW FIELD ---
+
     defineField({
       name: 'stripePriceId',
       title: 'Stripe Price ID (for Recurring)',
       type: 'string',
+      description: 'This field is synced automatically from Stripe. Create a product in Stripe with metadata `sanity_slug` matching this service\'s slug.',
+      readOnly: true, // This field is now auto-synced
       hidden: ({document}) => document?.serviceType !== 'recurring',
     }),
 

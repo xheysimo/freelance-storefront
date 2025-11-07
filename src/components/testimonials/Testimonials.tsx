@@ -13,9 +13,10 @@ export interface Testimonial {
 
 type TestimonialsProps = {
   testimonials: Testimonial[]
+  title?: string // <-- 1. Add optional title prop
 }
 
-export default function Testimonials({ testimonials }: TestimonialsProps) {
+export default function Testimonials({ testimonials, title }: TestimonialsProps) { // <-- 2. Get prop
   if (!testimonials || testimonials.length === 0) {
     return null
   }
@@ -25,7 +26,7 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
     <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-950 w-full mt-16">
       <div className="mx-auto max-w-5xl px-6 lg:px-8">
         <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-          What People Are Saying
+          {title || 'What People Are Saying'} {/* <-- 3. Use prop or default */}
         </h2>
 
         {/* Grid for the testimonials */}

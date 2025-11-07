@@ -8,7 +8,13 @@ import {
   CardElement,
 } from '@stripe/react-stripe-js'
 
-export default function CheckoutForm({ amount }: { amount: number }) {
+export default function CheckoutForm({
+  amount,
+  onSuccess, // <-- 1. Add onSuccess prop
+}: {
+  amount: number
+  onSuccess: () => void // <-- 2. Define its type
+}) {
   const stripe = useStripe()
   const elements = useElements()
 
@@ -67,8 +73,9 @@ export default function CheckoutForm({ amount }: { amount: number }) {
       // Show a success message
       // The card has been authorized, but NOT charged
       setMessage(
-        'Success! Your card has been authorized. Payment will be taken upon service completion.'
+        'Success! Your card has been authorized.'
       )
+      onSuccess() // <-- 3. Call onSuccess!
     }
 
     setIsLoading(false)
@@ -111,7 +118,7 @@ export default function CheckoutForm({ amount }: { amount: number }) {
       </button>
 
       {message && (
-        <div className="mt-4 text-center text-sm text-red-600 dark:text-red-400">
+        <div className="mt-4 text-center text-sm text-green-600 dark:text-green-400"> {/* <-- Changed to green for success */}
           {message}
         </div>
       )}

@@ -1,6 +1,10 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/layout/Header"; // <-- 1. Import Header
+import Footer from "@/components/layout/Footer"; // <-- 2. Import Footer
+import { SanityLive } from "@/sanity/lib/live"; // <-- 3. Import SanityLive
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +32,16 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {children}
+        {/* 4. Add a wrapping div for layout */}
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          {/* 5. Make children grow to fill space */}
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
+        
+        {/* 6. Add Sanity visual editing component */}
+        <SanityLive />
       </body>
     </html>
   );

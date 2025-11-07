@@ -6,25 +6,37 @@ import { notFound } from 'next/navigation'
 interface Service {
   title: string
   priceGBP: number
+  priceSuffix: string // <-- Added
+  serviceType: 'oneOff' | 'recurring' // <-- Added
+  stripePriceId?: string // <-- Added
+  projectBrief?: { 
+    title: string
+    fields: any[]
+    formspreeEndpoint: string 
+  }
 }
 
-// This function fetches the data for a SINGLE service based on its slug
+// Update the query to fetch all necessary fields
 const getServiceBySlug = async (slug: string): Promise<Service | null> => {
   const query = `*[_type == "service" && slug.current == $slug][0]{
     title,
     priceGBP,
+    priceSuffix,
+    serviceType,
+    stripePriceId,
+    projectBrief->{
+      title,
+      fields,
+      formspreeEndpoint
+    }
   }`
   
-  // --- THIS IS THE FIX ---
-  // 1. Fetch as <any> to bypass the incorrect linter constraint
   const result = await sanityFetch<any>({ 
     query, 
     params: { slug } 
   })
   
-  // 2. Cast the data back to the correct type
   return result.data as Service | null 
-  // --- END OF FIX ---
 }
 
 // This is the page component
@@ -33,13 +45,17 @@ export default async function BookServicePage({
 }: {
   params: { slug: string }
 }) {
-  // This 'await' is still correct and necessary
   const resolvedParams = await params;
   const service = await getServiceBySlug(resolvedParams.slug)
 
-  // If no service is found, show a 404 page
   if (!service) {
     notFound()
+  }
+
+  // A recurring service MUST have a Stripe Price ID
+  if (service.serviceType === 'recurring' && !service.stripePriceId) {
+    // You can render a more helpful error page if you like
+    throw new Error('This recurring service is not configured with a Stripe Price ID.')
   }
 
   return (
@@ -47,6 +63,10 @@ export default async function BookServicePage({
       <CheckoutWrapper 
         serviceName={service.title} 
         price={service.priceGBP} 
+        priceSuffix={service.priceSuffix}
+        serviceType={service.serviceType}
+        stripePriceId={service.stripePriceId}
+        projectBrief={service.projectBrief}
       />
     </main>
   )
