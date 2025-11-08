@@ -10,10 +10,12 @@ import { briefForm } from './briefForm'
 import { formField } from './formField'
 import { orderType } from './orderType'
 import { quoteType } from './quoteType'
+import { userType } from './userType'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
     // Documents
+    userType,
     orderType,
     quoteType,
     serviceType,

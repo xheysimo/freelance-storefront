@@ -7,6 +7,8 @@ import CheckoutForm from './CheckoutForm'
 import { useState } from 'react'
 import ProjectBriefForm from './ProjectBriefForm' 
 import SubscriptionForm from './SubscriptionForm'
+import { useSession } from 'next-auth/react' // <-- 1. Import useSession
+import { Session } from 'next-auth' // <-- 2. Import Session type
 
 // Load Stripe with your public key
 const stripePromise = loadStripe(
@@ -28,7 +30,7 @@ export default function CheckoutWrapper({
   serviceType,
   stripePriceId,
   projectBrief,
-  serviceSlug, // <-- 1. ACCEPT THE SLUG
+  serviceSlug,
 }: {
   serviceId: string 
   serviceName: string
@@ -37,12 +39,12 @@ export default function CheckoutWrapper({
   serviceType: 'oneOff' | 'recurring'
   stripePriceId?: string
   projectBrief?: ProjectBrief
-  serviceSlug: string // <-- 1. ACCEPT THE SLUG
+  serviceSlug: string
 }) {
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null) 
+  const { data: session, status } = useSession() // <-- 3. Get session data
 
-  // ... (renderHeader function is unchanged) ...
   const renderHeader = () => {
     if (isAuthorized) {
       return null // The ProjectBriefForm renders its own header
@@ -74,7 +76,6 @@ export default function CheckoutWrapper({
     )
   }
 
-  // 4. Conditionally render the correct form/button
   const renderForm = () => {
     // State 1: Payment is authorized, show the project brief form
     if (isAuthorized && orderId) { 
@@ -95,6 +96,15 @@ export default function CheckoutWrapper({
       )
     }
 
+    // ---!! NEW: Add a loading state while session is being checked !! ---
+    if (status === 'loading') {
+      return (
+        <div className="text-center text-gray-500">
+          Loading checkout...
+        </div>
+      )
+    }
+
     // State 2: It's a recurring service, show the Subscribe button
     if (serviceType === 'recurring') {
       return (
@@ -102,7 +112,8 @@ export default function CheckoutWrapper({
           priceId={stripePriceId!}
           price={price}
           priceSuffix={priceSuffix}
-          serviceSlug={serviceSlug} // <-- 2. PASS SLUG TO SUB FORM
+          serviceSlug={serviceSlug}
+          session={session as Session | null} // <-- 4. Pass session
         />
       )
     }
@@ -113,6 +124,7 @@ export default function CheckoutWrapper({
         <CheckoutForm 
           amount={price} 
           serviceId={serviceId} 
+          session={session as Session | null} // <-- 4. Pass session
           onSuccess={(newOrderId) => { 
             setOrderId(newOrderId)
             setIsAuthorized(true)

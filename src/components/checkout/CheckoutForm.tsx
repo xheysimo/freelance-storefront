@@ -1,29 +1,41 @@
 // src/components/checkout/CheckoutForm.tsx
 'use client'
 
-import { FormEvent, useState, ChangeEvent } from 'react'
+import { FormEvent, useState, ChangeEvent, useEffect } from 'react' // 1. Import useEffect
 import {
   useStripe,
   useElements,
   CardElement,
 } from '@stripe/react-stripe-js'
+import { Session } from 'next-auth' // 2. Import Session type
 
 export default function CheckoutForm({
   amount,
   serviceId,
   onSuccess,
+  session, // 3. Accept session as a prop
 }: {
   amount: number
   serviceId: string
   onSuccess: (orderId: string) => void
+  session: Session | null
 }) {
   const stripe = useStripe()
   const elements = useElements()
 
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [email, setEmail] = useState('')
-  const [name, setName] = useState('') // <-- ADDED NAME STATE
+  // 4. Set initial state from session
+  const [email, setEmail] = useState(session?.user?.email || '')
+  const [name, setName] = useState(session?.user?.name || '')
+
+  // 5. Add effect to update if session loads late
+  useEffect(() => {
+    if (session) {
+      setEmail(session.user?.email || '')
+      setName(session.user?.name || '')
+    }
+  }, [session])
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -31,7 +43,6 @@ export default function CheckoutForm({
       return // Stripe.js has not yet loaded.
     }
 
-    // --- UPDATED VALIDATION ---
     if (!email || !name) {
       setMessage('Please enter your name and email.')
       return
@@ -47,7 +58,7 @@ export default function CheckoutForm({
       body: JSON.stringify({
         amount: amount * 100, 
         email: email,
-        name: name, // <-- SEND NAME TO API
+        name: name, // Send name to API
       }),
     })
 
@@ -75,7 +86,7 @@ export default function CheckoutForm({
           card: cardElement,
           billing_details: { 
             email: email,
-            name: name, // <-- ADD NAME TO BILLING
+            name: name,
           },
         },
       }
@@ -84,7 +95,7 @@ export default function CheckoutForm({
     if (stripeError) {
       setMessage(stripeError.message || 'An unknown error occurred')
     } else {
-      // 4. Call our NEW /api/create-order endpoint
+      // 4. Call our /api/create-order endpoint
       try {
         const orderRes = await fetch('/api/create-order', {
           method: 'POST',
@@ -97,7 +108,7 @@ export default function CheckoutForm({
           setMessage(`Payment authorized, but failed to create order: ${orderError}`)
         } else {
           setMessage('Success! Your card has been authorized.')
-          onSuccess(orderId) // <-- Pass back the new orderId
+          onSuccess(orderId) // Pass back the new orderId
         }
       } catch (err) {
         setMessage('Payment authorized, but failed to create order. Please contact support.')
@@ -110,7 +121,7 @@ export default function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
       
-      {/* --- ADDED NAME FIELD --- */}
+      {/* --- 6. Conditionally disable fields --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Name
@@ -122,12 +133,12 @@ export default function CheckoutForm({
             onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             placeholder="Your Name"
             required
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm p-3"
+            disabled={!!session} // <-- Disable if logged in
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm p-3 disabled:bg-gray-100 dark:disabled:bg-gray-700"
           />
         </div>
       </div>
 
-      {/* --- Email Field --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Email
@@ -139,10 +150,13 @@ export default function CheckoutForm({
             onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             placeholder="your@email.com"
             required
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm p-3"
+            disabled={!!session} // <-- Disable if logged in
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm p-3 disabled:bg-gray-100 dark:disabled:bg-gray-700"
           />
         </div>
       </div>
+      {/* --- End conditional fields --- */}
+
 
       {/* --- Card Field --- */}
       <div>
@@ -154,7 +168,7 @@ export default function CheckoutForm({
             options={{
               style: {
                 base: {
-                  color: '#ffffff', // Will need JS to toggle for dark/light mode
+                  color: '#111827', // Dark text for light mode
                   fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
                   fontSmoothing: 'antialiased',
                   fontSize: '16px',
@@ -167,6 +181,26 @@ export default function CheckoutForm({
                   iconColor: '#fa755a',
                 },
               },
+              // Simple media query for dark mode
+              // This is a bit of a hack, but CardElement is in an iframe
+              // You might need more robust logic to detect dark mode
+              ...((typeof window !== "undefined" && window.matchMedia('(prefers-color-scheme: dark)').matches) ? {
+                style: {
+                  base: {
+                    color: '#ffffff', // Light text for dark mode
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                      color: '#6b7280', // Gray-500 for dark mode
+                    },
+                  },
+                  invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a',
+                  },
+                }
+              } : {})
             }}
           />
         </div>
@@ -182,7 +216,7 @@ export default function CheckoutForm({
       </button>
 
       {message && (
-        <div className="mt-4 text-center text-sm text-red-600 dark:text-red-400"> 
+        <div className={`mt-4 text-center text-sm ${message.startsWith('Success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}> 
           {message}
         </div>
       )}

@@ -6,6 +6,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header"; 
 import Footer from "@/components/layout/Footer"; 
 import { SanityLive } from "@/sanity/lib/live"; 
+import AuthProvider from '@/components/auth/AuthProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +45,7 @@ export default function RootLayout({
         `}
         suppressHydrationWarning={true}
       >
+        <AuthProvider>
         <div className="flex min-h-screen flex-col">
           {/* Header (assumed to be sticky/fixed) */}
           <Header />
@@ -56,7 +58,7 @@ export default function RootLayout({
           {/* Footer */}
           <Footer />
         </div>
-        
+        </AuthProvider>
         {/* Sanity visual editing component */}
         <SanityLive />
       </body>

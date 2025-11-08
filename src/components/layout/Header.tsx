@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X, Zap } from 'lucide-react' // Icons for menu and branding
+import { useSession, signOut } from 'next-auth/react' // <-- Import hooks
 
 // We'll define nav links here for easy management
 const navLinks = [
@@ -14,8 +15,14 @@ const navLinks = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: session, status } = useSession() // <-- Get session data
+  const isLoading = status === 'loading'
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' })
+  }
 
   return (
     // UPGRADE 1: Make header sticky and use full width
@@ -47,13 +54,38 @@ export default function Header() {
 
         {/* Right Side: Primary CTA & Mobile Button */}
         <div className="flex items-center gap-4">
-          {/* UPGRADE 3: High-contrast CTA Button */}
-          <Link
-            href="/contact"
-            className="hidden lg:block rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition"
-          >
-            Get an Estimate
-          </Link>
+          
+          {/* --- THIS IS THE NEW LOGIC --- */}
+          <div className="hidden lg:flex items-center gap-4">
+            {isLoading ? (
+              <div className="rounded-full bg-gray-200 dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-500">
+                ...
+              </div>
+            ) : session ? (
+              <>
+                <Link
+                  href="/account"
+                  className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition"
+                >
+                  My Account
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition"
+              >
+                Login
+              </Link>
+            )}
+          </div>
+          {/* --- END NEW LOGIC --- */}
 
           {/* UPGRADE 2: Mobile Menu Button */}
           <button
@@ -67,7 +99,7 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile Menu Panel */}
+      {/* Mobile Menu Panel (Now auth-aware) */}
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white dark:bg-gray-950 shadow-lg border-t border-gray-200 dark:border-gray-800">
           <div className="space-y-4 px-6 py-6">
@@ -81,14 +113,42 @@ export default function Header() {
                 {link.name}
               </Link>
             ))}
-            {/* Mobile CTA */}
-            <Link
-              href="/contact"
-              className="mt-6 block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-base font-semibold text-white shadow-sm hover:bg-indigo-700"
-              onClick={toggleMobileMenu}
-            >
-              Get an Estimate
-            </Link>
+            
+            {/* --- NEW MOBILE LOGIC --- */}
+            {isLoading ? (
+              <div className="mt-6 block w-full rounded-md bg-gray-200 px-3.5 py-2.5 text-center text-base font-semibold text-gray-500">
+                ...
+              </div>
+            ) : session ? (
+              <>
+                <Link
+                  href="/account"
+                  className="mt-6 block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-base font-semibold text-white shadow-sm hover:bg-indigo-700"
+                  onClick={toggleMobileMenu}
+                >
+                  My Account
+                </Link>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    toggleMobileMenu();
+                  }}
+                  className="mt-4 block w-full rounded-md bg-gray-200 dark:bg-gray-800 px-3.5 py-2.5 text-center text-base font-semibold text-gray-700 dark:text-gray-300"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="mt-6 block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-base font-semibold text-white shadow-sm hover:bg-indigo-700"
+                onClick={toggleMobileMenu}
+              >
+                Login
+              </Link>
+            )}
+            {/* --- END NEW MOBILE LOGIC --- */}
+            
           </div>
         </div>
       )}
