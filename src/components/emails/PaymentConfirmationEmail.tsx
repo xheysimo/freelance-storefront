@@ -1,19 +1,21 @@
 // src/components/emails/PaymentConfirmationEmail.tsx
 import * as React from 'react'
 
+// --- 1. UPDATE THE PROPS INTERFACE ---
 interface EmailProps {
   name: string
-  orderId: string
-  serviceName: string
+  amount: number // Use 'amount' instead of 'orderId'/'serviceName'
+  quoteId: string // Use 'quoteId'
 }
 
 /**
- * Email template for confirming a successful payment capture (order completion).
+ * Email template for confirming a successful QUOTE payment.
  */
 export const PaymentConfirmationEmail: React.FC<Readonly<EmailProps>> = ({
+  // --- 2. UPDATE THE DESTRUCTURED PROPS ---
   name,
-  orderId,
-  serviceName,
+  amount,
+  quoteId,
 }) => (
   <div
     style={{
@@ -23,14 +25,21 @@ export const PaymentConfirmationEmail: React.FC<Readonly<EmailProps>> = ({
       lineHeight: '1.5',
     }}
   >
+    {/* --- 3. UPDATE THE EMAIL CONTENT --- */}
     <h1 style={{ color: '#333', fontSize: '24px' }}>Hi {name},</h1>
     <p style={{ color: '#555', fontSize: '16px' }}>
-      Your payment for <strong>{serviceName}</strong> (Order {orderId}) has
-      been successfully captured, and the order is now complete.
+      This is to confirm we have successfully received your payment of{' '}
+      <strong>
+        £{amount.toLocaleString('en-GB', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
+      </strong>{' '}
+      for quote (Ref: {quoteId}).
     </p>
     <p style={{ color: '#555', fontSize: '16px' }}>
-      Thank you for your business! You can view all your completed orders in
-      your account dashboard.
+      We will begin work on your project shortly and will be in touch with
+      an update.
     </p>
     <p style={{ color: '#777', fontSize: '14px', marginTop: '30px' }}>
       Thanks,

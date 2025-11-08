@@ -11,6 +11,7 @@ import { apiVersion, dataset, projectId } from './src/sanity/env'
 // 1. Import ONLY our smart action
 // import { CapturePaymentAction } from './src/sanity/actions/CapturePaymentAction' // <-- REMOVE THIS
 import { PublishOrderAction } from './src/sanity/actions/PublishOrderAction'
+import { GeneratePaymentLinkAction } from '@/sanity/actions/GeneratePaymentLinkAction'
 
 export default defineConfig({
   basePath: '/studio',
@@ -46,6 +47,17 @@ export default defineConfig({
         })
 
         // We no longer need to add CapturePaymentAction here
+        return actions
+      }
+
+      // --- 2. Add new logic for 'quote' documents ---
+      if (schemaType === 'quote') {
+        // Start with default actions
+        const actions = [...prev]
+        
+        // Add our custom action to the list
+        actions.push(GeneratePaymentLinkAction)
+        
         return actions
       }
 

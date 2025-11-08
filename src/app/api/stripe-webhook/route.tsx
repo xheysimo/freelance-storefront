@@ -1,4 +1,4 @@
-// src/app/api/stripe-webhook/route.ts
+// src/app/api/stripe-webhook/route.tsx
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
@@ -6,6 +6,9 @@ import { sanityMutationClient } from '@/sanity/lib/mutationClient'
 
 import { sendEmail } from '@/lib/resend'
 import { OrderConfirmationEmail } from '@/components/emails/OrderConfirmationEmail'
+
+// --- 1. IMPORT THE NEW EMAIL COMPONENT ---
+import { PaymentConfirmationEmail } from '@/components/emails/PaymentConfirmationEmail'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -82,7 +85,6 @@ export async function POST(request: Request) {
           await sendEmail({
             to: customerEmail,
             subject: 'Your Order is Confirmed!',
-            // --- THIS IS FIX 1 ---
             react: (
               <OrderConfirmationEmail
                 name={customerName || 'Valued Customer'}
@@ -90,7 +92,6 @@ export async function POST(request: Request) {
                 serviceName={serviceName}
               />
             ),
-            // ---------------------
           })
           console.log(`✅ Sent order confirmation email for order ${orderId}`)
         }
@@ -112,7 +113,6 @@ export async function POST(request: Request) {
           await sendEmail({
             to: customerEmail,
             subject: 'Your Subscription is Confirmed!',
-            // --- THIS IS FIX 2 ---
             react: (
               <OrderConfirmationEmail
                 name={customerName || 'Valued Customer'}
@@ -120,13 +120,60 @@ export async function POST(request: Request) {
                 serviceName={serviceName}
               />
             ),
-            // ---------------------
           })
           console.log(
             `✅ Sent subscription confirmation email for order ${orderId}`
           )
         }
+        
+      // --- 2. ADD THIS NEW 'ELSE IF' BLOCK ---
+      } else if (session.mode === 'payment') {
+        const quoteId = session.metadata?.quoteId
+        
+        if (!quoteId) {
+          console.warn(
+            `⚠️ checkout.session.completed in 'payment' mode with no 'quoteId' in metadata. Skipping.`
+          )
+          // We can return early, it's not a quote payment we need to track.
+          return NextResponse.json({ received: true, message: 'Skipped: Not a quote payment.' })
+        }
+        
+        console.log(`ℹ️ Payment successful for quote ${quoteId}. Updating Sanity...`)
+
+        // Update the quote status in Sanity
+        await sanityMutationClient
+          .patch(quoteId)
+          .set({ status: 'converted' }) // Set status to 'Converted (Paid)'
+          .commit()
+
+        console.log(`✅ Successfully updated quote ${quoteId} to 'converted'.`)
+
+        // Send a payment confirmation email
+        const customerEmail = session.customer_details?.email
+        const customerName = session.customer_details?.name || 'Valued Customer'
+        
+        // session.amount_total is in smallest currency unit (e.g., pence)
+        const amountPaid = (session.amount_total || 0) / 100 
+
+        if (customerEmail) {
+           await sendEmail({
+            to: customerEmail,
+            subject: 'We\'ve Received Your Payment!',
+            react: (
+              <PaymentConfirmationEmail
+                name={customerName}
+                amount={amountPaid}
+                quoteId={quoteId}
+              />
+            ),
+          })
+          console.log(`✅ Sent payment confirmation email for quote ${quoteId}`)
+        } else {
+           console.warn(`⚠️ Missing customer email for quote ${quoteId}. Cannot send email.`)
+        }
       }
+      // --- END OF NEW BLOCK ---
+
     } catch (err: any) {
       console.error(
         `❌ Error handling 'checkout.session.completed': ${err.message}`
