@@ -4,7 +4,6 @@ import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import PortableTextComponent from "@/components/sanity/PortableText"
 import Link from "next/link"
-// UPGRADE 1: Use Lucide icons for consistency
 import { Check, Clock, ShieldCheck, Zap, DollarSign, ArrowRight } from "lucide-react" 
 import Portfolio, { Project } from "@/components/portfolio/Portfolio"
 import Testimonials, { Testimonial } from "@/components/testimonials/Testimonials"
@@ -20,12 +19,14 @@ interface ProjectWithTestimonial extends Project {
   testimonial?: Testimonial
 }
 
+// --- 1. UPDATE INTERFACE ---
 interface Service {
   _id: string
   title: string
   summary: string
   priceGBP: number
   priceSuffix: string
+  serviceType: 'oneOff' | 'recurring' // <-- ADDED
   details: any
   benefits: Feature[]
   ctaText: string
@@ -37,12 +38,14 @@ interface Service {
   relatedProjects: ProjectWithTestimonial[]
 }
 
+// --- 2. UPDATE QUERY ---
 const SERVICE_QUERY = `*[_type == "service" && slug.current == $slug][0]{
   _id,
   title,
   summary,
   priceGBP,
   priceSuffix,
+  serviceType, // <-- ADDED
   details,
   benefits,
   ctaText,
@@ -67,7 +70,7 @@ const SERVICE_QUERY = `*[_type == "service" && slug.current == $slug][0]{
   }
 }`
 
-// --- METADATA (Unchanged) ---
+// --- METADATA (Unchanged, but param fix included) ---
 export async function generateMetadata({
   params,
 }: {
@@ -89,7 +92,7 @@ export async function generateMetadata({
   }
 }
 
-// --- PAGE COMPONENT WITH UI/UX UPGRADES ---
+// --- PAGE COMPONENT (Param fix included) ---
 export default async function ServicePage({
   params,
 }: {
@@ -122,7 +125,11 @@ export default async function ServicePage({
             {/* Title Block */}
             <div className="text-center lg:text-left mx-auto max-w-3xl lg:max-w-none">
                 <p className="text-base font-semibold leading-7 text-indigo-600 dark:text-indigo-400 flex items-center justify-center lg:justify-start">
-                    <Zap className="h-4 w-4 mr-2" /> Fixed-Price Service Package
+                    <Zap className="h-4 w-4 mr-2" /> 
+                    {/* --- 3. MAKE TEXT DYNAMIC --- */}
+                    {service.serviceType === 'recurring' 
+                        ? 'Recurring Subscription' 
+                        : 'Fixed-Price Service Package'}
                 </p>
                 <h1 className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
                     {service.title}
@@ -132,7 +139,7 @@ export default async function ServicePage({
                 </p>
             </div>
 
-            {/* UPGRADE 2: Price Bar for Mobile/Tablet */}
+            {/* Price Bar for Mobile/Tablet */}
             <div className="lg:hidden mt-10 w-full rounded-xl bg-white dark:bg-gray-950 shadow-xl border border-gray-200 dark:border-gray-800 p-6">
                 <div className="flex justify-between items-center mb-4">
                     <span className="text-4xl font-bold text-gray-900 dark:text-white">
@@ -170,11 +177,9 @@ export default async function ServicePage({
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                     What's Included in this Package?
                 </h2>
-                {/* UPGRADE 3: Two-column feature grid for visual clarity */}
                 <ul className="not-prose list-none p-0 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"> 
                   {service.benefits.map((benefit) => (
                     <li key={benefit._key} className="flex gap-4">
-                      {/* Using Lucide Check icon */}
                       <Check className="h-6 w-6 text-indigo-600 shrink-0 mt-1" /> 
                       <div>
                         <strong className="block text-gray-900 dark:text-white">
@@ -196,7 +201,6 @@ export default async function ServicePage({
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                     Technical Specifications & Scope
                 </h2>
-                {/* UPGRADE: Applied prose styles within a standard div for better control */}
                 <div className="prose prose-lg dark:prose-invert max-w-none">
                     <PortableTextComponent value={service.details} />
                 </div>
@@ -225,7 +229,7 @@ export default async function ServicePage({
                     {service.ctaText} <ArrowRight className="inline h-5 w-5 ml-1 mb-0.5" />
                 </Link>
                 
-                {/* UPGRADE 4: Trust/Guarantee Icons */}
+                {/* Trust/Guarantee Icons */}
                 <div className="mt-6 space-y-3 text-sm text-gray-600 dark:text-gray-400">
                     <p className="flex items-center">
                         <ShieldCheck className="h-4 w-4 mr-2 text-green-500 shrink-0" />
@@ -235,10 +239,14 @@ export default async function ServicePage({
                         <Clock className="h-4 w-4 mr-2 text-indigo-500 shrink-0" />
                         Typically delivered in 48-72 hours
                     </p>
-                    <p className="flex items-center">
-                        <DollarSign className="h-4 w-4 mr-2 text-yellow-500 shrink-0" />
-                        Card authorized, not charged until completion.
-                    </p>
+                    
+                    {/* --- 4. THIS IS THE FIX --- */}
+                    {service.serviceType === 'oneOff' && (
+                        <p className="flex items-center">
+                            <DollarSign className="h-4 w-4 mr-2 text-yellow-500 shrink-0" />
+                            Card authorized, not charged until completion.
+                        </p>
+                    )}
                 </div>
             </div>
           </aside>

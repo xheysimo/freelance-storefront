@@ -7,7 +7,7 @@ import Portfolio, { Project } from "@/components/portfolio/Portfolio"
 // Import essential icons for speed, process, and trust
 import { ArrowRightIcon, BriefcaseIcon, CheckCircle2, Star, Clock, Zap, User, Code, DollarSign, Layout, TrendingUp, ShoppingCart, Repeat2 } from "lucide-react"
 
-// --- INTERFACES & QUERIES (Unchanged) ---
+// --- 1. UPDATE INTERFACE ---
 interface Service {
   _id: Key
   title: string
@@ -16,8 +16,10 @@ interface Service {
   priceSuffix: string
   ctaText: string
   slug: string
+  isPopular?: boolean // <-- ADDED
 }
 
+// --- 2. UPDATE QUERY ---
 const SERVICES_QUERY = `*[_type == "service"]{
     _id,
     title,
@@ -25,7 +27,8 @@ const SERVICES_QUERY = `*[_type == "service"]{
     priceGBP,
     priceSuffix,
     ctaText,
-    "slug": slug.current
+    "slug": slug.current,
+    isPopular // <-- ADDED
   }`
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonial"]{
@@ -64,7 +67,11 @@ async function getPageData() {
 
 export default async function Home() {
   const { services, testimonials, projects } = await getPageData()
-  const popularServiceId = services.length > 0 ? services[0]._id : null
+  
+  // --- 3. THIS IS THE NEW LOGIC ---
+  const popularService = services.find((service) => service.isPopular)
+  const popularServiceId = popularService ? popularService._id : null
+  // --- END NEW LOGIC ---
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-white dark:bg-gray-950">
@@ -162,12 +169,12 @@ export default async function Home() {
             <div 
               key={service._id} 
               className={`flex flex-col rounded-3xl p-8 shadow-xl transition duration-300 hover:shadow-2xl hover:scale-[1.02] ${
-                service._id === popularServiceId
+                service._id === popularServiceId // This logic now works dynamically
                   ? "border-4 border-indigo-600 dark:border-indigo-400 bg-indigo-50/50 dark:bg-gray-900/50"
                   : "border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900"
               }`}
             >
-              {service._id === popularServiceId && (
+              {service._id === popularServiceId && ( // This logic now works dynamically
                 <div className="mb-4 self-start rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-md">
                   BEST VALUE
                 </div>

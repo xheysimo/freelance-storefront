@@ -19,6 +19,17 @@ export const serviceType = defineType({
       type: 'slug',
       options: {source: 'title', maxLength: 96},
     }),
+    
+    // --- THIS IS THE NEW FIELD ---
+    defineField({
+      name: 'isPopular',
+      title: 'Popular / Featured?',
+      type: 'boolean',
+      description: 'Set this to ON to display a "BEST VALUE" badge on the homepage.',
+      initialValue: false,
+    }),
+    // --- END NEW FIELD ---
+    
     defineField({
       name: 'serviceType',
       title: 'Service Type',
