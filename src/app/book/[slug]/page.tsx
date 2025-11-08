@@ -98,7 +98,7 @@ export default async function BookServicePage({
             </div>
         </div>
 
-        <main className="flex min-h-screen flex-col items-center justify-center p-6">
+        <main className="flex flex-col items-center justify-center p-6">
             <CheckoutWrapper 
                 serviceId={service._id} 
                 serviceName={service.title} 

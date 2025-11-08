@@ -1,7 +1,8 @@
 // src/app/contact/page.tsx
 import { Metadata } from 'next'
 import Link from 'next/link'
-import ContactForm from '@/components/forms/ContactForm'
+// import ContactForm from '@/components/forms/ContactForm' // <-- REMOVED
+import QuoteForm from '@/components/forms/QuoteForm'     // <-- ADDED
 import { Clock, DollarSign, Mail, Phone, Zap } from 'lucide-react' // Icons for contact details
 
 export const metadata: Metadata = {
@@ -82,7 +83,7 @@ export default function ContactPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 Send Your Project Inquiry
             </h2>
-            <ContactForm />
+            <QuoteForm /> {/* <-- THIS IS THE CHANGED LINE */}
           </div>
 
         </div>

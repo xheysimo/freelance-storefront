@@ -8,12 +8,14 @@ import { projectType } from './projectType'
 import { testimonialType } from './testimonialType'
 import { briefForm } from './briefForm'
 import { formField } from './formField'
-import { orderType } from './orderType'     // <-- 1. IMPORT
+import { orderType } from './orderType'
+import { quoteType } from './quoteType'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
     // Documents
-    orderType,                            // <-- 2. ADD
+    orderType,
+    quoteType,
     serviceType,
     projectType,
     testimonialType,

@@ -5,8 +5,9 @@ export const structure: StructureResolver = (S) =>
   S.list()
     .title('Content')
     .items([
-      S.documentTypeListItem('order').title('Orders'), // <-- 1. ADD
-      S.divider(),                                    // <-- 2. ADD
+      S.documentTypeListItem('order').title('Orders'),
+      S.documentTypeListItem('quote').title('Quotes'),
+      S.divider(),
       
       S.documentTypeListItem('service').title('Services'),
       S.documentTypeListItem('project').title('Projects'),
@@ -19,7 +20,8 @@ export const structure: StructureResolver = (S) =>
       ...S.documentTypeListItems().filter(
         (item) =>
           ![
-            'order', // <-- 3. ADD
+            'order',
+            'quote',
             'service', 
             'project', 
             'testimonial', 
