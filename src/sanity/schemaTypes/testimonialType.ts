@@ -12,12 +12,6 @@ export const testimonialType = defineType({
       title: 'Author Title / Company',
       type: 'string',
     }),
-    defineField({
-      name: 'authorImage',
-      title: 'Author Image',
-      type: 'image',
-      options: {hotspot: true},
-    }),
     defineField({name: 'quote', title: 'Quote', type: 'text', rows: 5}),
     defineField({
       name: 'project',

@@ -7,6 +7,7 @@ import { visionTool } from '@sanity/vision'
 import { schema } from './src/sanity/schemaTypes'
 import { structure } from './src/sanity/structure'
 import { apiVersion, dataset, projectId } from './src/sanity/env'
+import { CancelSubscriptionAction } from './src/sanity/actions/CancelSubscriptionAction'
 
 // 1. Import ONLY our smart action
 // import { CapturePaymentAction } from './src/sanity/actions/CapturePaymentAction' // <-- REMOVE THIS
@@ -36,7 +37,7 @@ export default defineConfig({
         const actions = prev.flatMap((action) => {
           // Replace 'publish' with our smart action
           if (action.action === 'publish') {
-            return [PublishOrderAction]
+            return [PublishOrderAction, CancelSubscriptionAction]
           }
           // Remove 'unpublish' and 'delete'
           if (action.action === 'unpublish' || action.action === 'delete') {
