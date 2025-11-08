@@ -92,7 +92,10 @@ export function PublishOrderAction(
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SANITY_WEBHOOK_SECRET}`,
         },
         body: JSON.stringify({
-          orderId: doc._id,
+          // --- THIS IS THE FIX ---
+          // Use the canonical ID (`props.id`) not the draft ID (`doc._id`)
+          orderId: props.id,
+          // --- END OF FIX ---
           paymentIntentId: doc.stripePaymentIntentId,
         }),
       })
