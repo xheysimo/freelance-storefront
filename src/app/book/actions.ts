@@ -1,25 +1,20 @@
 // src/app/book/actions.ts
-'use server' // <-- This is correct.
+'use server'
 
 import { sanityMutationClient } from '@/sanity/lib/mutationClient'
 import Stripe from 'stripe'
 
-// Define the shape of the brief data
 interface ProjectBrief {
   title: string
   fields: any[]
 }
 
-// Define the return type for our function
 interface OrderCreationResult {
   orderId: string | null
   projectBrief: ProjectBrief | null
   error?: string 
 }
 
-/**
- * Server-side function (invoked by the client) to create a subscription order.
- */
 export async function createSubscriptionOrder(
   sessionId: string,
   slug: string
@@ -88,7 +83,6 @@ export async function createSubscriptionOrder(
       service: {
         _type: 'reference',
         _ref: service._id,
-        // ---!! REMOVED: title: service.title !! ---
       },
       stripeSubscriptionId: subscriptionId,
       stripeCustomerId: stripeCustomerId,

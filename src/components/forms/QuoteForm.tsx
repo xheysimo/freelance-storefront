@@ -14,10 +14,8 @@ export default function QuoteForm() {
     setError('')
     setSuccess('')
 
-    // 1. We use FormData to handle file uploads
     const formData = new FormData(event.currentTarget)
     
-    // 2. Client-side validation (optional but good)
     if (!formData.get('name') || !formData.get('email') || !formData.get('message')) {
       setError('Please fill out all required fields.')
       setIsLoading(false)
@@ -25,12 +23,9 @@ export default function QuoteForm() {
     }
 
     try {
-      // 3. Submit as multipart/form-data
-      // We DON'T set the 'Content-Type' header;
-      // the browser does it automatically with the correct boundary
       const res = await fetch('/api/submit-quote', {
         method: 'POST',
-        body: formData, // Pass the FormData object directly
+        body: formData,
       })
 
       const data = await res.json()
@@ -40,7 +35,7 @@ export default function QuoteForm() {
       }
 
       setSuccess('Quote request sent successfully! I will be in touch soon.')
-      event.currentTarget.reset() // Clear the form
+      event.currentTarget.reset()
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred. Please try again.')
     }
@@ -48,7 +43,6 @@ export default function QuoteForm() {
     setIsLoading(false)
   }
 
-  // If successfully submitted, show a thank you message
   if (success) {
     return (
       <div className="text-center">
@@ -60,10 +54,8 @@ export default function QuoteForm() {
     )
   }
 
-  // Otherwise, show the form
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-6">
-      {/* Name Field */}
       <div>
         <label
           htmlFor="name"
@@ -83,7 +75,6 @@ export default function QuoteForm() {
         </div>
       </div>
 
-      {/* Email Field */}
       <div>
         <label
           htmlFor="email"
@@ -103,7 +94,6 @@ export default function QuoteForm() {
         </div>
       </div>
 
-      {/* Message Field */}
       <div>
         <label
           htmlFor="message"
@@ -114,7 +104,7 @@ export default function QuoteForm() {
         <div className="mt-1">
           <textarea
             id="message"
-            name="message" // This will be the "message" field in the brief
+            name="message"
             rows={5}
             placeholder="Hi, I'd like to talk about..."
             required
@@ -123,7 +113,6 @@ export default function QuoteForm() {
         </div>
       </div>
       
-      {/* --- NEW FILE UPLOAD FIELD --- */}
       <div>
         <label
           htmlFor="file-upload"
@@ -137,16 +126,13 @@ export default function QuoteForm() {
         <div className="mt-1">
           <input
             id="file-upload"
-            name="file-upload" // This becomes the 'key' in the API route
+            name="file-upload"
             type="file"
             className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 dark:text-gray-400 dark:file:bg-indigo-900 dark:file:text-indigo-300 dark:hover:file:bg-indigo-800"
           />
         </div>
       </div>
-      {/* --- END NEW FIELD --- */}
-
-
-      {/* Submit Button & Messages */}
+      
       <div>
         <button
           type="submit"

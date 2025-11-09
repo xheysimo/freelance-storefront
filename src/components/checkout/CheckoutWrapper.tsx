@@ -7,21 +7,18 @@ import CheckoutForm from './CheckoutForm'
 import { useState } from 'react'
 import ProjectBriefForm from './ProjectBriefForm' 
 import SubscriptionForm from './SubscriptionForm'
-import { useSession } from 'next-auth/react' // <-- 1. Import useSession
-import { Session } from 'next-auth' // <-- 2. Import Session type
+import { useSession } from 'next-auth/react'
+import { Session } from 'next-auth'
 
-// Load Stripe with your public key
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 )
 
-// Define the shape of the brief data
 interface ProjectBrief {
   title: string
   fields: any[]
 }
 
-// 1. Update props to accept all new data from the page
 export default function CheckoutWrapper({
   serviceId, 
   serviceName,
@@ -43,11 +40,11 @@ export default function CheckoutWrapper({
 }) {
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null) 
-  const { data: session, status } = useSession() // <-- 3. Get session data
+  const { data: session, status } = useSession()
 
   const renderHeader = () => {
     if (isAuthorized) {
-      return null // The ProjectBriefForm renders its own header
+      return null
     }
 
     if (serviceType === 'recurring') {
@@ -61,7 +58,6 @@ export default function CheckoutWrapper({
       )
     }
 
-    // Default to one-off
     return (
       <>
         <h2 className="text-3xl font-bold text-center">Book: {serviceName}</h2>
@@ -77,7 +73,6 @@ export default function CheckoutWrapper({
   }
 
   const renderForm = () => {
-    // State 1: Payment is authorized, show the project brief form
     if (isAuthorized && orderId) { 
       return projectBrief ? (
         <ProjectBriefForm 
@@ -96,7 +91,6 @@ export default function CheckoutWrapper({
       )
     }
 
-    // ---!! NEW: Add a loading state while session is being checked !! ---
     if (status === 'loading') {
       return (
         <div className="text-center text-gray-500">
@@ -105,7 +99,6 @@ export default function CheckoutWrapper({
       )
     }
 
-    // State 2: It's a recurring service, show the Subscribe button
     if (serviceType === 'recurring') {
       return (
         <SubscriptionForm
@@ -113,18 +106,17 @@ export default function CheckoutWrapper({
           price={price}
           priceSuffix={priceSuffix}
           serviceSlug={serviceSlug}
-          session={session as Session | null} // <-- 4. Pass session
+          session={session as Session | null}
         />
       )
     }
 
-    // State 3: It's a one-off service, show the standard authorization form
     return (
       <Elements stripe={stripePromise}>
         <CheckoutForm 
           amount={price} 
           serviceId={serviceId} 
-          session={session as Session | null} // <-- 4. Pass session
+          session={session as Session | null}
           onSuccess={(newOrderId) => { 
             setOrderId(newOrderId)
             setIsAuthorized(true)

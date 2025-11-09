@@ -3,7 +3,7 @@ import { sanityFetch } from "@/sanity/lib/live"
 import CheckoutWrapper from "@/components/checkout/CheckoutWrapper"
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Lock, Zap } from 'lucide-react' // Icons for trust and navigation
+import { ArrowLeft, Lock, Zap } from 'lucide-react'
 
 interface Service {
   _id: string 
@@ -18,7 +18,6 @@ interface Service {
   }
 }
 
-// Update the query to fetch all necessary fields
 const getServiceBySlug = async (slug: string): Promise<Service | null> => {
   const query = `*[_type == "service" && slug.current == $slug][0]{
     _id,
@@ -41,7 +40,6 @@ const getServiceBySlug = async (slug: string): Promise<Service | null> => {
   return result.data as Service | null 
 }
 
-// This is the page component
 export default async function BookServicePage({
   params,
 }: {
@@ -54,13 +52,11 @@ export default async function BookServicePage({
     notFound()
   }
 
-  // A recurring service MUST have a Stripe Price ID
   if (service.serviceType === 'recurring' && !service.stripePriceId) {
     throw new Error('This recurring service is not configured with a Stripe Price ID.')
   }
 
   return (
-    // UPGRADE 1: Use full width, structured padding, and clear background
     <main className="w-full bg-gray-50 dark:bg-gray-900 py-16 sm:py-24">
       <div className="mx-auto max-w-5xl px-6 lg:px-8">
         
@@ -73,7 +69,7 @@ export default async function BookServicePage({
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back to Service Details
             </Link>
             
-            {/* UPGRADE 2: Security Badge */}
+            {/* Security Badge */}
             <div className="flex items-center text-sm text-green-600 dark:text-green-400 font-medium">
                 <Lock className="h-4 w-4 mr-1.5" /> Secure Checkout
             </div>
@@ -110,7 +106,7 @@ export default async function BookServicePage({
                 serviceSlug={resolvedParams.slug}
             />
         </main>
-        {/* Final Trust/Footer Area */}
+        {/* Footer Area */}
         <div className="mt-10 text-center text-sm text-gray-500 dark:text-gray-400">
             All payments are processed securely via Stripe. Your information is encrypted and protected.
         </div>

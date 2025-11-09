@@ -41,7 +41,6 @@ export const blockContentType = defineType({
         ],
       },
     }),
-    // You can add 'image' here if you want images in your text
     defineArrayMember({
       type: 'image',
       options: {hotspot: true},

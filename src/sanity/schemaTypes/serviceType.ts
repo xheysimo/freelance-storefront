@@ -6,7 +6,6 @@ export const serviceType = defineType({
   title: 'Service / Membership',
   type: 'document',
   fields: [
-    // --- Core Info ---
     defineField({
       name: 'title',
       title: 'Service Title',
@@ -20,7 +19,6 @@ export const serviceType = defineType({
       options: {source: 'title', maxLength: 96},
     }),
     
-    // --- THIS IS THE NEW FIELD ---
     defineField({
       name: 'isPopular',
       title: 'Popular / Featured?',
@@ -28,7 +26,6 @@ export const serviceType = defineType({
       description: 'Set this to ON to display a "BEST VALUE" badge on the homepage.',
       initialValue: false,
     }),
-    // --- END NEW FIELD ---
     
     defineField({
       name: 'serviceType',
@@ -51,10 +48,9 @@ export const serviceType = defineType({
     defineField({
       name: 'details',
       title: 'Full Details',
-      type: 'blockContent', // Uses our rich text object
+      type: 'blockContent',
     }),
 
-    // --- Pricing (UK-Targeted) ---
     defineField({
       name: 'priceGBP',
       title: 'Price (GBP)',
@@ -74,12 +70,11 @@ export const serviceType = defineType({
       initialValue: 'VAT not applicable',
     }),
     
-    // --- Conversion & Stripe ---
     defineField({
       name: 'benefits',
       title: 'Key Benefits / Features',
       type: 'array',
-      of: [{type: 'feature'}], // Uses our reusable feature object
+      of: [{type: 'feature'}],
     }),
     defineField({
       name: 'ctaText',
@@ -109,15 +104,14 @@ export const serviceType = defineType({
       title: 'Stripe Price ID (for Recurring)',
       type: 'string',
       description: 'This field is synced automatically from Stripe. Create a product in Stripe with metadata `sanity_slug` matching this service\'s slug.',
-      readOnly: true, // This field is now auto-synced
+      readOnly: true,
       hidden: ({document}) => document?.serviceType !== 'recurring',
     }),
 
-    // --- SEO ---
     defineField({
       name: 'seo',
       title: 'SEO Settings',
-      type: 'seo', // Uses our reusable SEO object
+      type: 'seo',
     }),
   ],
 })

@@ -15,7 +15,6 @@ export default function LoginPage() {
   const { data: session, status } = useSession()
 
   useEffect(() => {
-    // If user is already authenticated, redirect to /account
     if (status === 'authenticated') {
       router.push('/account')
     }
@@ -27,7 +26,7 @@ export default function LoginPage() {
     setError('')
 
     const result = await signIn('credentials', {
-      redirect: false, // Handle redirect manually
+      redirect: false,
       email: email,
       password: password,
     })
@@ -35,16 +34,12 @@ export default function LoginPage() {
     setIsLoading(false)
 
     if (result?.ok) {
-      // Success! Redirect to account page
       router.push('/account')
     } else {
-      // Failed login
       setError(result?.error || 'Invalid email or password. Please try again.')
     }
   }
 
-  // If status is 'authenticated', we are in the process of redirecting.
-  // Show a "Redirecting" message.
   if (status === 'authenticated') {
     return (
       <main className="w-full py-20 sm:py-24 bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
@@ -55,8 +50,6 @@ export default function LoginPage() {
     )
   }
   
-  // For 'loading' OR 'unauthenticated', render the full login form.
-  // This prevents any hydration mismatch.
   return (
     <main className="w-full py-20 sm:py-24 bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
       <div className="w-full max-w-md p-8 bg-white dark:bg-gray-950 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
@@ -83,7 +76,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* --- FORGOT PASSWORD LINK --- */}
           <div className="text-right">
             <Link
               href="/forgot-password"
@@ -92,7 +84,6 @@ export default function LoginPage() {
               Forgot password?
             </Link>
           </div>
-          {/* --- END LINK --- */}
           
           {error && (
             <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>

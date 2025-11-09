@@ -6,7 +6,6 @@ import { Suspense, useEffect, useState } from 'react'
 import { getBriefDataForOrder } from './actions'
 import ProjectBriefForm from '@/components/checkout/ProjectBriefForm'
 
-// Define the shape of the brief data
 interface ProjectBrief {
   title: string
   fields: any[]
@@ -27,7 +26,6 @@ function SubmitBriefContent() {
       return
     }
 
-    // Call the server action to get the data
     getBriefDataForOrder(orderId)
       .then((result) => {
         if (result.error) {
@@ -64,16 +62,14 @@ function SubmitBriefContent() {
   }
 
   if (briefData && orderId) {
-    // We already have this component, it just needs the data!
     return (
       <ProjectBriefForm briefData={briefData} orderId={orderId} />
     )
   }
 
-  return null // Fallback
+  return null
 }
 
-// Main page component
 export default function SubmitBriefPage() {
   return (
     <main className="w-full py-20 sm:py-24 bg-gray-50 dark:bg-gray-900 flex justify-center items-center">

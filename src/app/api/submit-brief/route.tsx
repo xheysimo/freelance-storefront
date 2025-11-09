@@ -2,12 +2,9 @@
 import { NextResponse } from 'next/server'
 import { sanityMutationClient } from '@/sanity/lib/mutationClient'
 
-// --- ADD THESE IMPORTS ---
 import { sendEmail } from '@/lib/resend'
 import { BriefConfirmationEmail } from '@/components/emails/BriefConfirmationEmail'
-// -------------------------
 
-// Define a simple type for the order data we need
 interface OrderCustomerData {
   customerEmail: string
   customerName: string
@@ -21,7 +18,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing orderId' }, { status: 400 })
     }
 
-    // --- (Fetch order logic is unchanged) ---
     let order: OrderCustomerData | null = null
     try {
       const query =
@@ -34,12 +30,10 @@ export async function POST(request: Request) {
         fetchErr.message
       )
     }
-    // ------------------------------------------
 
     let formattedBrief = ''
     const fileUploads: { key: string; file: File }[] = []
 
-    // --- (Form parsing logic is unchanged) ---
     for (const [key, value] of formData.entries()) {
       if (key === 'orderId') continue
 
@@ -57,9 +51,7 @@ export async function POST(request: Request) {
         }:\n${value}\n\n`
       }
     }
-    // ------------------------------------------
 
-    // --- (File upload logic is unchanged) ---
     const sanityFileAssets = []
     for (const upload of fileUploads) {
       try {
@@ -95,32 +87,25 @@ export async function POST(request: Request) {
         }:\n[File Upload FAILED: ${upload.file.name}]\n\n`
       }
     }
-    // ------------------------------------------
 
-    // --- (Sanity patch logic is unchanged) ---
     const patch = sanityMutationClient.patch(orderId)
     patch.set({ projectBrief: formattedBrief.trim() })
     if (sanityFileAssets.length > 0) {
       patch.set({ briefFiles: sanityFileAssets })
     }
     await patch.commit()
-    // ------------------------------------------
 
-    // --- (Send email logic) ---
     if (order?.customerEmail) {
       try {
         await sendEmail({
           to: order.customerEmail,
           subject: 'We received your project brief!',
-          // --- THIS IS THE FIX ---
-          // Pass as a JSX element, not a function call
           react: (
             <BriefConfirmationEmail
               name={order.customerName || 'Valued Customer'}
               orderId={orderId}
             />
           ),
-          // -----------------------
         })
         console.log(`✅ Sent brief confirmation email for order ${orderId}`)
       } catch (emailErr: any) {
@@ -134,7 +119,6 @@ export async function POST(request: Request) {
         `⚠️ No customer email found for order ${orderId}. Skipping brief email.`
       )
     }
-    // ----------------------------
 
     return NextResponse.json({ success: true })
   } catch (err: any) {

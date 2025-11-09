@@ -24,7 +24,6 @@ export default function ManageSubscriptionButton() {
         throw new Error(data.error || 'Something went wrong')
       }
 
-      // Redirect to Stripe's hosted page
       router.push(data.url)
 
     } catch (err: any) {

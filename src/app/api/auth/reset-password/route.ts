@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       .set({
         password: hashedPassword,
       })
-      .unset(['passwordResetToken', 'passwordResetExpires']) // Clear the tokens
+      .unset(['passwordResetToken', 'passwordResetExpires'])
       .commit()
 
     return NextResponse.json({ message: 'Password reset successfully.' }, { status: 200 })

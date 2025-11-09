@@ -4,9 +4,8 @@
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
-import { createSubscriptionOrder } from '../actions' // Used for subscription flow
+import { createSubscriptionOrder } from '../actions'
 
-// Define the shape of the brief data (unchanged)
 interface ProjectBrief {
   title: string
   fields: any[]
@@ -16,11 +15,9 @@ function SuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  // Check for Subscription parameters
   const sessionId = searchParams.get('session_id')
   const slug = searchParams.get('slug')
 
-  // Check for Quote parameters (NEW)
   const quoteSessionId = searchParams.get('quote_session_id')
 
   const [isLoading, setIsLoading] = useState(true)
@@ -28,10 +25,7 @@ function SuccessContent() {
   const [projectBrief, setProjectBrief] = useState<ProjectBrief | null>(null)
   const [orderId, setOrderId] = useState<string | null>(null)
 
-  // --- NEW: Handle Quote Success FIRST ---
   if (quoteSessionId) {
-    // If quoteSessionId is present, the payment was for a quote.
-    // The Sanity update was handled by the webhook, so we can render success immediately.
     return (
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -52,18 +46,14 @@ function SuccessContent() {
       </div>
     )
   }
-  // --- END Quote Success Handling ---
 
   useEffect(() => {
-    // --- Subscription Flow: Only proceed if both subscription params are present ---
     if (!sessionId || !slug) {
-      // This is the fallback for missing params when it's NOT a quote payment.
       setError('Missing required payment information.')
       setIsLoading(false)
       return
     }
 
-    // Call the Server Action (Subscription Logic)
     createSubscriptionOrder(sessionId, slug)
       .then((result) => {
         if (result.error) {
@@ -72,14 +62,12 @@ function SuccessContent() {
           setOrderId(result.orderId)
           setProjectBrief(result.projectBrief)
           
-          // 3. If a brief is required, redirect the user
           if (result.orderId && result.projectBrief) {
             router.push(`/book/submit-brief?orderId=${result.orderId}`)
           }
         }
       })
       .catch((err) => {
-        // This will catch network errors
         setError(err.message || 'An unexpected error occurred.')
       })
       .finally(() => {
@@ -117,7 +105,6 @@ function SuccessContent() {
     )
   }
 
-  // This is the default success message for subscription payments
   return (
     <div className="text-center">
       <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -139,7 +126,6 @@ function SuccessContent() {
   )
 }
 
-// Main page component (unchanged)
 export default function SuccessPage() {
   return (
     <main className="w-full py-20 sm:py-24 bg-gray-50 dark:bg-gray-900 flex justify-center items-center">

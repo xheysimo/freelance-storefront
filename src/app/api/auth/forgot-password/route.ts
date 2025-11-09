@@ -6,10 +6,8 @@ import { Resend } from 'resend'
 import ResetPasswordEmail from '@/components/auth/ResetPasswordEmail'
 import * as React from 'react'
 
-// Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// 1. ---!! FIX: VALIDATE ALL ENV VARS !! ---
 const fromEmail = process.env.RESEND_FROM_EMAIL
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 
@@ -19,17 +17,13 @@ if (!fromEmail) {
 if (!siteUrl) {
   console.error('Missing NEXT_PUBLIC_SITE_URL environment variable')
 }
-// ---!! END FIX !! ---
 
 
 export async function POST(request: Request) {
-  // 2. ---!! FIX: ADD RUNTIME CHECK FOR ENV VARS !! ---
-  // This satisfies TypeScript, ensuring 'fromEmail' and 'siteUrl' are strings
   if (!fromEmail || !siteUrl) {
     console.error('Auth API route missing required environment variables.')
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 })
   }
-  // ---!! END FIX !! ---
 
   try {
     const { email } = await request.json()
@@ -44,7 +38,6 @@ export async function POST(request: Request) {
     )
 
     if (!user) {
-      // Don't reveal if the user exists for security
       return NextResponse.json({ message: 'If a user with this email exists, a reset link has been sent.' })
     }
 
@@ -67,13 +60,13 @@ export async function POST(request: Request) {
       })
       .commit()
 
-    // 5. ---!! SEND THE EMAIL !! ---
+    // 5. Send the email
     
     const resetUrl = `${siteUrl}/reset-password?token=${resetToken}`
     
     try {
       await resend.emails.send({
-        from: fromEmail, // This is now guaranteed to be a 'string'
+        from: fromEmail,
         to: user.email,
         subject: 'Reset your password',
         react: ResetPasswordEmail({
@@ -81,14 +74,14 @@ export async function POST(request: Request) {
           resetUrl: resetUrl,
         }) as React.ReactElement, 
       });
-    } catch (emailError: any) { // 3. ---!! FIX: REMOVED STRAY 's' !! ---
+    } catch (emailError: any) {
       console.error("Email sending error:", emailError);
       return NextResponse.json({ error: 'Failed to send email.' }, { status: 500 })
     }
     
     return NextResponse.json({ message: 'If a user with this email exists, a reset link has been sent.' })
 
-  } catch (err: any) { // 4. ---!! FIX: REMOVED STRAY 'S' !! ---
+  } catch (err: any) {
     console.error('Forgot Password API Error:', err.message)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

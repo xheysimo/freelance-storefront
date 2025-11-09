@@ -3,7 +3,6 @@
 
 import { sanityMutationClient } from "@/sanity/lib/mutationClient";
 
-// Define the shape of the brief data
 interface ProjectBrief {
   title: string
   fields: any[]
@@ -21,7 +20,6 @@ export async function getBriefDataForOrder(orderId: string): Promise<BriefDataRe
   }
 
   try {
-    // Fetch the order and its linked service's project brief
     const order = await sanityMutationClient.fetch<any>(
       `*[_type == "order" && _id == $orderId][0]{
         "orderId": _id,
@@ -40,7 +38,6 @@ export async function getBriefDataForOrder(orderId: string): Promise<BriefDataRe
       throw new Error('No matching order found.');
     }
 
-    // Check if the brief is still pending
     if (order.projectBrief !== 'Pending submission...') {
       return { 
         error: 'This project brief has already been submitted.', 

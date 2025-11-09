@@ -7,8 +7,7 @@ import { sanityMutationClient } from '@/sanity/lib/mutationClient'
 import { sendEmail } from '@/lib/resend'
 import { OrderConfirmationEmail } from '@/components/emails/OrderConfirmationEmail'
 
-// --- 1. IMPORT THE NEW EMAIL COMPONENT ---
-import { PaymentConfirmationEmail } from '@/components/emails/PaymentConfirmationEmail'
+import { QuotePaymentConfirmationEmail } from '@/components/emails/QuotePaymentConfirmationEmail'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -20,7 +19,6 @@ if (!webhookSecret) {
   )
 }
 
-// ... (cancelSanityOrder function is unchanged) ...
 async function cancelSanityOrder(subscriptionId: string) {
   const query = `*[_type == "order" && stripeSubscriptionId == $subscriptionId][0]{_id, subscriptionStatus}`
   const params = { subscriptionId: subscriptionId }
@@ -126,7 +124,6 @@ export async function POST(request: Request) {
           )
         }
         
-      // --- 2. ADD THIS NEW 'ELSE IF' BLOCK ---
       } else if (session.mode === 'payment') {
         const quoteId = session.metadata?.quoteId
         
@@ -134,25 +131,21 @@ export async function POST(request: Request) {
           console.warn(
             `⚠️ checkout.session.completed in 'payment' mode with no 'quoteId' in metadata. Skipping.`
           )
-          // We can return early, it's not a quote payment we need to track.
           return NextResponse.json({ received: true, message: 'Skipped: Not a quote payment.' })
         }
         
         console.log(`ℹ️ Payment successful for quote ${quoteId}. Updating Sanity...`)
 
-        // Update the quote status in Sanity
         await sanityMutationClient
           .patch(quoteId)
-          .set({ status: 'converted' }) // Set status to 'Converted (Paid)'
+          .set({ status: 'converted' })
           .commit()
 
         console.log(`✅ Successfully updated quote ${quoteId} to 'converted'.`)
 
-        // Send a payment confirmation email
         const customerEmail = session.customer_details?.email
         const customerName = session.customer_details?.name || 'Valued Customer'
         
-        // session.amount_total is in smallest currency unit (e.g., pence)
         const amountPaid = (session.amount_total || 0) / 100 
 
         if (customerEmail) {
@@ -160,7 +153,7 @@ export async function POST(request: Request) {
             to: customerEmail,
             subject: 'We\'ve Received Your Payment!',
             react: (
-              <PaymentConfirmationEmail
+              <QuotePaymentConfirmationEmail
                 name={customerName}
                 amount={amountPaid}
                 quoteId={quoteId}
@@ -172,7 +165,6 @@ export async function POST(request: Request) {
            console.warn(`⚠️ Missing customer email for quote ${quoteId}. Cannot send email.`)
         }
       }
-      // --- END OF NEW BLOCK ---
 
     } catch (err: any) {
       console.error(
@@ -181,7 +173,6 @@ export async function POST(request: Request) {
     }
   }
 
-  // ... (rest of your webhook logic is unchanged) ...
   else if (event.type === 'price.created') {
     try {
       const price = event.data.object as Stripe.Price

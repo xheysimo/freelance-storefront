@@ -2,9 +2,9 @@
 import { NextResponse } from 'next/server'
 import { sanityMutationClient } from '@/sanity/lib/mutationClient'
 import bcrypt from 'bcryptjs'
-import Stripe from 'stripe' // <-- Import Stripe
+import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!) // <-- Init Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +24,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
     }
 
-    // ---!! NEW LOGIC: CREATE STRIPE CUSTOMER !! ---
     let stripeCustomerId: string
     try {
       const customer = await stripe.customers.create({
@@ -36,7 +35,6 @@ export async function POST(request: Request) {
       console.error("Stripe customer creation failed:", stripeError.message)
       return NextResponse.json({ error: 'Failed to create payment profile.' }, { status: 500 })
     }
-    // ---!! END NEW LOGIC !! ---
 
 
     // 2. Hash the password
@@ -48,7 +46,7 @@ export async function POST(request: Request) {
       name: name,
       email: email,
       password: hashedPassword,
-      stripeCustomerId: stripeCustomerId, // <-- Save the new ID
+      stripeCustomerId: stripeCustomerId,
     }
 
     await sanityMutationClient.create(doc)

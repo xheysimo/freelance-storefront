@@ -5,7 +5,6 @@ import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-// Get this from your environment variables
 const SANITY_WEBHOOK_SECRET = process.env.SANITY_WEBHOOK_SECRET!
 
 export async function POST(request: Request) {
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
     // 4. Update the Sanity document status to 'cancelled'
     await sanityMutationClient
       .patch(orderId)
-      .set({ oneOffStatus: 'cancelled' }) // Set the correct status
+      .set({ oneOffStatus: 'cancelled' })
       .commit()
 
     return NextResponse.json({ success: true, status: 'cancelled' })
@@ -42,8 +41,6 @@ export async function POST(request: Request) {
       err.code === 'payment_intent_unexpected_state' &&
       err.message.includes('already been canceled')
     ) {
-      // The Payment Intent is already cancelled in Stripe.
-      // Let's just ensure Sanity is in sync.
       const { orderId } = await request.json()
       await sanityMutationClient
         .patch(orderId)

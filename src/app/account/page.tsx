@@ -4,9 +4,9 @@ import { redirect } from 'next/navigation'
 import { sanityFetch } from '@/sanity/lib/live'
 import { authOptions } from '@/lib/authOptions' 
 import SignOutButton from '@/components/auth/SignOutButton'
-import AccountClientUI from '@/components/auth/AccountClientUI' // <-- 1. Import new client component
+import AccountClientUI from '@/components/auth/AccountClientUI'
 import { cookies } from 'next/headers'
-import { Suspense } from 'react' // <-- 2. Import Suspense
+import { Suspense } from 'react'
 
 // Define the shape of our orders
 interface Order {
@@ -38,7 +38,6 @@ function TabsLoading() {
 }
 
 export default async function AccountPage() {
-  // Keep forcing dynamic render for session and fresh data
   cookies()
 
   const session = await getServerSession(authOptions)

@@ -17,7 +17,6 @@ export default function RegisterPage() {
   const { data: session, status } = useSession()
 
   useEffect(() => {
-    // If user is already authenticated, redirect to /account
     if (status === 'authenticated') {
       router.push('/account')
     }
@@ -53,8 +52,6 @@ export default function RegisterPage() {
     }
   }
 
-  // THE SAME FIX:
-  // 1. If status is 'authenticated', we are in the process of redirecting.
   if (status === 'authenticated') {
     return (
       <main className="w-full py-20 sm:py-24 bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
@@ -65,7 +62,6 @@ export default function RegisterPage() {
     )
   }
 
-  // 2. For 'loading' OR 'unauthenticated', render the full register form.
   return (
     <main className="w-full py-20 sm:py-24 bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
       <div className="w-full max-w-md p-8 bg-white dark:bg-gray-950 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">

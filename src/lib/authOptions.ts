@@ -4,15 +4,13 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { sanityMutationClient } from '@/sanity/lib/mutationClient'
 import bcrypt from 'bcryptjs'
 
-// Define the User type as it will be in Sanity
 interface SanityUser {
   _id: string
   name: string
   email: string
-  password?: string // This is the HASHED password
+  password?: string
 }
 
-// 1. Define and EXPORT the authOptions
 export const authOptions: AuthOptions = {
   session: {
     strategy: 'jwt',
@@ -33,7 +31,6 @@ export const authOptions: AuthOptions = {
           return null
         }
 
-        // 1. Fetch user from Sanity by email
         const user: SanityUser | null = await sanityMutationClient.fetch(
           `*[_type == "user" && email == $email][0]`,
           { email: credentials.email }
@@ -47,7 +44,6 @@ export const authOptions: AuthOptions = {
           return null
         }
 
-        // 2. Compare the provided password with the stored hash
         const passwordsMatch = await bcrypt.compare(
           credentials.password,
           user.password
@@ -57,7 +53,6 @@ export const authOptions: AuthOptions = {
           return null
         }
 
-        // 3. Return user object
         return {
           id: user._id,
           email: user.email,
@@ -67,14 +62,12 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    // Attach user ID to the session token
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
       }
       return token
     },
-    // Attach user ID to the session object
     session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string

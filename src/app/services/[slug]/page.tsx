@@ -8,7 +8,6 @@ import { Check, Clock, ShieldCheck, Zap, DollarSign, ArrowRight } from "lucide-r
 import Portfolio, { Project } from "@/components/portfolio/Portfolio"
 import Testimonials, { Testimonial } from "@/components/testimonials/Testimonials"
 
-// --- TYPES (Unchanged) ---
 interface Feature {
   _key: string
   title: string
@@ -19,14 +18,13 @@ interface ProjectWithTestimonial extends Project {
   testimonial?: Testimonial
 }
 
-// --- 1. UPDATE INTERFACE ---
 interface Service {
   _id: string
   title: string
   summary: string
   priceGBP: number
   priceSuffix: string
-  serviceType: 'oneOff' | 'recurring' // <-- ADDED
+  serviceType: 'oneOff' | 'recurring'
   details: any
   benefits: Feature[]
   ctaText: string
@@ -38,7 +36,6 @@ interface Service {
   relatedProjects: ProjectWithTestimonial[]
 }
 
-// --- 2. UPDATE QUERY ---
 const SERVICE_QUERY = `*[_type == "service" && slug.current == $slug][0]{
   _id,
   title,
@@ -70,7 +67,6 @@ const SERVICE_QUERY = `*[_type == "service" && slug.current == $slug][0]{
   }
 }`
 
-// --- METADATA (Unchanged, but param fix included) ---
 export async function generateMetadata({
   params,
 }: {
@@ -92,7 +88,6 @@ export async function generateMetadata({
   }
 }
 
-// --- PAGE COMPONENT (Param fix included) ---
 export default async function ServicePage({
   params,
 }: {
@@ -118,15 +113,12 @@ export default async function ServicePage({
   return (
     <main className="flex min-h-screen flex-col bg-white dark:bg-gray-950">
       
-      {/* 1. Hero Section + Price Bar (Full Width Banner) */}
       <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
             
-            {/* Title Block */}
             <div className="text-center lg:text-left mx-auto max-w-3xl lg:max-w-none">
                 <p className="text-base font-semibold leading-7 text-indigo-600 dark:text-indigo-400 flex items-center justify-center lg:justify-start">
                     <Zap className="h-4 w-4 mr-2" /> 
-                    {/* --- 3. MAKE TEXT DYNAMIC --- */}
                     {service.serviceType === 'recurring' 
                         ? 'Recurring Subscription' 
                         : 'Fixed-Price Service Package'}
@@ -139,7 +131,6 @@ export default async function ServicePage({
                 </p>
             </div>
 
-            {/* Price Bar for Mobile/Tablet */}
             <div className="lg:hidden mt-10 w-full rounded-xl bg-white dark:bg-gray-950 shadow-xl border border-gray-200 dark:border-gray-800 p-6">
                 <div className="flex justify-between items-center mb-4">
                     <span className="text-4xl font-bold text-gray-900 dark:text-white">
@@ -164,14 +155,11 @@ export default async function ServicePage({
         </div>
       </section>
 
-      {/* 2. Main Content - Two Column Layout */}
       <div className="mx-auto max-w-7xl px-6 lg:px-8 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-16">
           
-          {/* 2a. Left Column (Main Content) */}
           <article className="lg:col-span-2 space-y-10 lg:space-y-12">
             
-            {/* Render Benefits (What's Included?) */}
             {service.benefits && service.benefits.length > 0 && (
               <div className='border-b border-gray-100 dark:border-gray-800 pb-10'>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
@@ -195,7 +183,6 @@ export default async function ServicePage({
               </div>
             )}
 
-            {/* Render Full Details (Technical Spec) */}
             {service.details && (
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
@@ -208,7 +195,6 @@ export default async function ServicePage({
             )}
           </article>
 
-          {/* 2b. Right Column (Sticky Booking Card - Hidden on mobile, shown on desktop) */}
           <aside className="lg:col-span-1 mt-12 lg:mt-0">
             <div className="sticky top-24 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-2xl bg-gray-50 dark:bg-gray-900">
                 
@@ -229,7 +215,6 @@ export default async function ServicePage({
                     {service.ctaText} <ArrowRight className="inline h-5 w-5 ml-1 mb-0.5" />
                 </Link>
                 
-                {/* Trust/Guarantee Icons */}
                 <div className="mt-6 space-y-3 text-sm text-gray-600 dark:text-gray-400">
                     <p className="flex items-center">
                         <ShieldCheck className="h-4 w-4 mr-2 text-green-500 shrink-0" />
@@ -240,7 +225,6 @@ export default async function ServicePage({
                         Typically delivered in 48-72 hours
                     </p>
                     
-                    {/* --- 4. THIS IS THE FIX --- */}
                     {service.serviceType === 'oneOff' && (
                         <p className="flex items-center">
                             <DollarSign className="h-4 w-4 mr-2 text-yellow-500 shrink-0" />
@@ -253,7 +237,6 @@ export default async function ServicePage({
         </div>
       </div>
 
-      {/* 3. Related Projects (Full Width - Increased prominence) */}
       {service.relatedProjects && service.relatedProjects.length > 0 && (
         <div className="bg-gray-50 dark:bg-gray-900 py-16 md:py-24">
             <Portfolio
@@ -263,7 +246,6 @@ export default async function ServicePage({
         </div>
       )}
 
-      {/* 4. Related Testimonials (Full Width) */}
       {relatedTestimonials.length > 0 && (
         <Testimonials
           testimonials={relatedTestimonials}

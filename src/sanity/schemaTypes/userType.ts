@@ -26,15 +26,13 @@ export const userType = defineType({
       hidden: true, 
     }),
     
-    // --- ADD THIS FIELD ---
     defineField({
       name: 'stripeCustomerId',
       title: 'Stripe Customer ID',
       type: 'string',
       readOnly: true,
-      hidden: true, // For security and to prevent manual edits
+      hidden: true,
     }),
-    // ----------------------
 
     defineField({
       name: 'passwordResetToken',

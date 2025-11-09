@@ -6,7 +6,6 @@ export const orderType = defineType({
   title: 'Order',
   type: 'document',
   fields: [
-    // ... customerName, customerEmail, service, oneOffStatus, subscriptionStatus...
     defineField({
       name: 'customerName',
       title: 'Customer Name',
@@ -27,7 +26,6 @@ export const orderType = defineType({
       readOnly: true,
     }),
     
-    // --- Status for One-Off Payments ---
     defineField({
       name: 'oneOffStatus',
       title: 'Status',
@@ -46,7 +44,6 @@ export const orderType = defineType({
       hidden: ({document}) => !document?.stripePaymentIntentId,
     }),
     
-    // --- Status for Recurring Subscriptions ---
     defineField({
       name: 'subscriptionStatus',
       title: 'Status',
@@ -62,7 +59,6 @@ export const orderType = defineType({
       hidden: ({document}) => !document?.stripeSubscriptionId,
     }),
 
-    // ... stripePaymentIntentId, stripeSubscriptionId ...
     defineField({
       name: 'stripePaymentIntentId',
       title: 'Stripe Payment Intent ID',
@@ -76,7 +72,6 @@ export const orderType = defineType({
       readOnly: true,
     }),
 
-    // --- Brief Information ---
     defineField({
       name: 'projectBrief',
       title: 'Project Brief (Text)',
@@ -86,7 +81,6 @@ export const orderType = defineType({
       description: 'Text-based fields from the project brief form.',
     }),
     
-    // --- NEW FIELD FOR FILES ---
     defineField({
       name: 'briefFiles',
       title: 'Brief Files',
@@ -102,7 +96,6 @@ export const orderType = defineType({
       ],
       readOnly: true,
     }),
-    // --- END NEW FIELD ---
 
     defineField({
       name: 'notes',

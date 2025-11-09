@@ -16,7 +16,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    // 1. Look up the customer in Sanity by their email
     const query = `*[_type == "order" && customerEmail == $email && defined(stripeCustomerId)][0]{
       stripeCustomerId
     }`
@@ -28,13 +27,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No subscription found for this email.' }, { status: 404 })
     }
 
-    // 2. Create a Billing Portal session
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: order.stripeCustomerId,
-      return_url: `${siteUrl}/account` // Return to the account page
+      return_url: `${siteUrl}/account`
     })
 
-    // 3. Return the URL
     return NextResponse.json({ url: portalSession.url })
 
   } catch (err: any) {

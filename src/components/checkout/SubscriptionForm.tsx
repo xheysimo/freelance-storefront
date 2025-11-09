@@ -45,21 +45,17 @@ export default function SubscriptionForm({
       }),
     })
 
-    // ---!! THIS IS THE FIX !! ---
-    // 1. Expect `url` from the API, not `sessionId`
     const { url, error } = await res.json()
 
     if (error) {
       setMessage(`Error: ${error}`)
       setIsLoading(false)
     } else if (url) {
-      // 2. Redirect to the full URL provided by Stripe
       window.location.href = url
     } else {
       setMessage('An unknown error occurred. Missing redirect URL.')
       setIsLoading(false)
     }
-    // ---!! END OF FIX !! ---
   }
 
   return (

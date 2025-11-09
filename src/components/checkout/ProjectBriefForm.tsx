@@ -32,19 +32,14 @@ export default function ProjectBriefForm({ briefData, orderId }: ProjectBriefFor
     setIsSubmitting(true)
     setError('')
     
-    // 1. Get FormData directly from the form element
     const formData = new FormData(event.currentTarget)
     
-    // 2. Append the orderId to the FormData
     formData.append('orderId', orderId)
     
     try {
-      // 3. Submit as multipart/form-data
-      // We DON'T set the 'Content-Type' header;
-      // the browser does it automatically with the correct boundary
       const response = await fetch('/api/submit-brief', {
         method: 'POST',
-        body: formData, // <-- Pass the FormData object directly
+        body: formData,
       })
       
       if (response.ok) {
@@ -60,7 +55,6 @@ export default function ProjectBriefForm({ briefData, orderId }: ProjectBriefFor
     setIsSubmitting(false)
   }
 
-  // (Success message is unchanged)
   if (isSubmitted) {
     return (
       <div className="text-center">
@@ -74,7 +68,6 @@ export default function ProjectBriefForm({ briefData, orderId }: ProjectBriefFor
     )
   }
 
-  // Otherwise, show the form
   return (
     <div className="w-full">
       <h3 className="text-2xl font-semibold text-center text-gray-900 dark:text-white">
@@ -84,9 +77,6 @@ export default function ProjectBriefForm({ briefData, orderId }: ProjectBriefFor
         Please fill out the details below so I can get started on your project.
       </p>
       
-      {/* Note: We removed 'onSubmit' from the <form> tag in the original 
-        and put it on the button. Let's stick to the <form> tag.
-      */}
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         {briefData.fields.map((field) => (
           <div key={field._key}>
@@ -107,7 +97,6 @@ export default function ProjectBriefForm({ briefData, orderId }: ProjectBriefFor
                   required={field.required}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm"
                 />
-              // --- ADDED FILE INPUT RENDER ---
               ) : field.fieldType === 'file' ? (
                 <input
                   id={field.name.current}
@@ -116,7 +105,6 @@ export default function ProjectBriefForm({ briefData, orderId }: ProjectBriefFor
                   required={field.required}
                   className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 dark:text-gray-400 dark:file:bg-indigo-900 dark:file:text-indigo-300 dark:hover:file:bg-indigo-800"
                 />
-              // --- END FILE INPUT RENDER ---
               ) : (
                 <input
                   id={field.name.current}

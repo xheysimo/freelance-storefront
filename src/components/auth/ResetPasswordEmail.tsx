@@ -25,7 +25,7 @@ export const ResetPasswordEmail: React.FC<Readonly<ResetPasswordEmailProps>> = (
         padding: '12px 20px',
         margin: '20px 0',
         color: '#fff',
-        backgroundColor: '#4f46e5', // Indigo color
+        backgroundColor: '#4f46e5',
         borderRadius: '5px',
         textDecoration: 'none',
         fontSize: '16px',

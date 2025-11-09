@@ -2,16 +2,13 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-// Instantiate Resend
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Get emails from environment variables
 const fromEmail = process.env.RESEND_FROM_EMAIL
 const toEmail = process.env.MY_PERSONAL_EMAIL
 
 export async function POST(request: Request) {
   try {
-    // Check if environment variables are set
     if (!fromEmail || !toEmail) {
       console.error(
         'Missing environment variables: RESEND_FROM_EMAIL or MY_PERSONAL_EMAIL'
@@ -24,7 +21,6 @@ export async function POST(request: Request) {
 
     const { name, email, message } = await request.json()
 
-    // Server-side validation
     if (!name || !email || !message) {
       return NextResponse.json(
         { error: 'All fields are required.' },
@@ -32,7 +28,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Send the email using Resend
     await resend.emails.send({
       from: fromEmail,
       to: [toEmail],
@@ -43,7 +38,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true })
   } catch (err: any) {
     console.error(`Error in /api/contact: ${err.message}`)
-    // Differentiate between Resend errors and other errors
     if (err.name === 'resend_error') {
       return NextResponse.json(
         { error: `Email failed to send: ${err.message}` },

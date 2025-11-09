@@ -14,20 +14,16 @@ export function PublishOrderAction(
   const { id, type, draft, published } = props
   const { publish } = useDocumentOperation(id, type)
 
-  // We need state for both cancelling and capturing
   const [dialog, setDialog] = useState<any>(null)
   const [isCapturing, setIsCapturing] = useState(false)
 
-  // Get status from the draft (your changes)
-  const doc = (draft || published) as any // Use draft first
+  const doc = (draft || published) as any
   const draftStatus = doc?.oneOffStatus
   const publishedStatus = published?.oneOffStatus
 
-  // --- Check 1: Is user trying to CANCEL? ---
   const isCancelling =
     draftStatus === 'cancelled' && publishedStatus !== 'cancelled'
   const onCancelHandle = async () => {
-    // (This logic is unchanged from before)
     setDialog({
       type: 'modal',
       content: 'Processing cancellation in Stripe...',
@@ -58,7 +54,7 @@ export function PublishOrderAction(
         const data = await res.json()
         throw new Error(data.error || 'Failed to cancel in Stripe.')
       }
-      publish.execute() // Publish the 'cancelled' status
+      publish.execute()
       props.onComplete()
       setDialog(null)
     } catch (err: any) {
@@ -72,8 +68,6 @@ export function PublishOrderAction(
     }
   }
 
-  // --- Check 2: Is user trying to CAPTURE (Get Paid)? ---
-  // THIS IS THE NEW LOGIC
   const isReadyToCapture =
     draftStatus === 'completed' && doc.stripePaymentIntentId
   const onCaptureHandle = async () => {
@@ -92,24 +86,13 @@ export function PublishOrderAction(
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SANITY_WEBHOOK_SECRET}`,
         },
         body: JSON.stringify({
-          // --- THIS IS THE FIX ---
-          // Use the canonical ID (`props.id`) not the draft ID (`doc._id`)
           orderId: props.id,
-          // --- END OF FIX ---
           paymentIntentId: doc.stripePaymentIntentId,
         }),
       })
 
       const data = await res.json()
       if (res.ok) {
-        // Stripe succeeded. The API route has set the status to 'paid'.
-        // We just need to tell the UI to refresh.
-
-        // --- THIS IS THE FIX ---
-        // The line `await props.client.patch(...)` was removed.
-        // We just call onComplete() to close the modal.
-        // The Studio will see the document changed and refresh itself.
-        // --- END OF FIX ---
 
         props.onComplete()
         setDialog(null)
@@ -128,17 +111,14 @@ export function PublishOrderAction(
     setIsCapturing(false)
   }
 
-  // --- Check 3: Is user trying to set to 'Paid' manually? ---
   const isChangingToPaid =
     draftStatus === 'paid' && publishedStatus !== 'paid'
 
-  // --- Check 4: Is this just a normal publish? ---
   const onPublishHandle = () => {
     publish.execute()
     props.onComplete()
   }
 
-  // --- NOW, RETURN THE CORRECT BUTTON ---
 
   if (isCancelling) {
     return {
@@ -149,18 +129,15 @@ export function PublishOrderAction(
   }
 
   if (isReadyToCapture) {
-    // Here is the fix! We show the "Get Paid" button
-    // This button will run the capture logic *instead* of publishing.
     return {
       label: isCapturing ? 'Capturing...' : 'Capture Payment (Get Paid)',
       icon: () => '💸',
-      tone: 'positive', // Make it green
+      tone: 'positive',
       disabled: isCapturing,
       onHandle: onCaptureHandle,
     }
   }
 
-  // If none of the above, return the default "Publish" button
   return {
     label: 'Publish',
     onHandle: onPublishHandle,

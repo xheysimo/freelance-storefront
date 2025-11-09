@@ -16,7 +16,6 @@ export const structure: StructureResolver = (S) =>
       
       S.divider(),
 
-      // Regular document types
       ...S.documentTypeListItems().filter(
         (item) =>
           ![

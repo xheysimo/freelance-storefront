@@ -1,19 +1,19 @@
 // src/components/checkout/CheckoutForm.tsx
 'use client'
 
-import { FormEvent, useState, ChangeEvent, useEffect } from 'react' // 1. Import useEffect
+import { FormEvent, useState, ChangeEvent, useEffect } from 'react'
 import {
   useStripe,
   useElements,
   CardElement,
 } from '@stripe/react-stripe-js'
-import { Session } from 'next-auth' // 2. Import Session type
+import { Session } from 'next-auth'
 
 export default function CheckoutForm({
   amount,
   serviceId,
   onSuccess,
-  session, // 3. Accept session as a prop
+  session,
 }: {
   amount: number
   serviceId: string
@@ -25,11 +25,9 @@ export default function CheckoutForm({
 
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  // 4. Set initial state from session
   const [email, setEmail] = useState(session?.user?.email || '')
   const [name, setName] = useState(session?.user?.name || '')
 
-  // 5. Add effect to update if session loads late
   useEffect(() => {
     if (session) {
       setEmail(session.user?.email || '')
@@ -40,7 +38,7 @@ export default function CheckoutForm({
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     if (!stripe || !elements) {
-      return // Stripe.js has not yet loaded.
+      return
     }
 
     if (!email || !name) {
@@ -51,14 +49,13 @@ export default function CheckoutForm({
     setIsLoading(true)
     setMessage('Authorizing...')
 
-    // 1. Create the PaymentIntent on your server
     const res = await fetch('/api/authorize', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         amount: amount * 100, 
         email: email,
-        name: name, // Send name to API
+        name: name,
       }),
     })
 
@@ -70,7 +67,6 @@ export default function CheckoutForm({
       return
     }
 
-    // 2. Get the CardElement
     const cardElement = elements.getElement(CardElement)
     if (!cardElement) {
       setMessage('Card element not found')
@@ -78,7 +74,6 @@ export default function CheckoutForm({
       return
     }
 
-    // 3. Confirm the card payment with the client_secret
     const { error: stripeError } = await stripe.confirmCardPayment(
       clientSecret,
       {
@@ -95,7 +90,6 @@ export default function CheckoutForm({
     if (stripeError) {
       setMessage(stripeError.message || 'An unknown error occurred')
     } else {
-      // 4. Call our /api/create-order endpoint
       try {
         const orderRes = await fetch('/api/create-order', {
           method: 'POST',
@@ -108,7 +102,7 @@ export default function CheckoutForm({
           setMessage(`Payment authorized, but failed to create order: ${orderError}`)
         } else {
           setMessage('Success! Your card has been authorized.')
-          onSuccess(orderId) // Pass back the new orderId
+          onSuccess(orderId) 
         }
       } catch (err) {
         setMessage('Payment authorized, but failed to create order. Please contact support.')
@@ -121,7 +115,6 @@ export default function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
       
-      {/* --- 6. Conditionally disable fields --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Name
@@ -133,7 +126,7 @@ export default function CheckoutForm({
             onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             placeholder="Your Name"
             required
-            disabled={!!session} // <-- Disable if logged in
+            disabled={!!session}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm p-3 disabled:bg-gray-100 dark:disabled:bg-gray-700"
           />
         </div>
@@ -150,15 +143,13 @@ export default function CheckoutForm({
             onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             placeholder="your@email.com"
             required
-            disabled={!!session} // <-- Disable if logged in
+            disabled={!!session}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 sm:text-sm p-3 disabled:bg-gray-100 dark:disabled:bg-gray-700"
           />
         </div>
       </div>
-      {/* --- End conditional fields --- */}
 
 
-      {/* --- Card Field --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Card Details
@@ -168,7 +159,7 @@ export default function CheckoutForm({
             options={{
               style: {
                 base: {
-                  color: '#111827', // Dark text for light mode
+                  color: '#111827', 
                   fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
                   fontSmoothing: 'antialiased',
                   fontSize: '16px',
@@ -181,18 +172,15 @@ export default function CheckoutForm({
                   iconColor: '#fa755a',
                 },
               },
-              // Simple media query for dark mode
-              // This is a bit of a hack, but CardElement is in an iframe
-              // You might need more robust logic to detect dark mode
               ...((typeof window !== "undefined" && window.matchMedia('(prefers-color-scheme: dark)').matches) ? {
                 style: {
                   base: {
-                    color: '#ffffff', // Light text for dark mode
+                    color: '#ffffff',
                     fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
                     fontSmoothing: 'antialiased',
                     fontSize: '16px',
                     '::placeholder': {
-                      color: '#6b7280', // Gray-500 for dark mode
+                      color: '#6b7280',
                     },
                   },
                   invalid: {

@@ -3,11 +3,9 @@
 
 import { PortableText, PortableTextComponents } from '@portabletext/react'
 import SanityImage from './SanityImage'
-import Link from 'next/link' // Import Link for internal links
+import Link from 'next/link'
 
-// 1. Define all the custom components with Tailwind classes
 const components: PortableTextComponents = {
-  // Define styles for block types (headings, paragraphs, etc.)
   block: {
     h2: ({ children }) => (
       <h2 className="text-3xl font-bold mt-10 mb-4 text-gray-900 dark:text-white">
@@ -24,7 +22,6 @@ const components: PortableTextComponents = {
         {children}
       </blockquote>
     ),
-    // This is the default paragraph style
     normal: ({ children }) => (
       <p className="text-lg text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
         {children}
@@ -32,7 +29,6 @@ const components: PortableTextComponents = {
     ),
   },
 
-  // Define styles for lists
   list: {
     bullet: ({ children }) => (
       <ul className="list-disc list-inside space-y-2 mb-6 text-lg text-gray-600 dark:text-gray-400">
@@ -46,7 +42,6 @@ const components: PortableTextComponents = {
     ),
   },
 
-  // Define styles for marks (inline elements)
   marks: {
     strong: ({ children }) => <strong>{children}</strong>,
     em: ({ children }) => <em>{children}</em>,
@@ -57,7 +52,6 @@ const components: PortableTextComponents = {
     ),
     link: ({ children, value }) => {
       const href = value.href || ''
-      // Handle internal links
       if (href.startsWith('/')) {
         return (
           <Link
@@ -68,7 +62,6 @@ const components: PortableTextComponents = {
           </Link>
         )
       }
-      // Handle external links
       return (
         <a
           href={href}
@@ -82,7 +75,6 @@ const components: PortableTextComponents = {
     },
   },
 
-  // Define styles for custom types (like images)
   types: {
     image: ({ value }) => (
       <div className="relative h-96 my-8 rounded-lg overflow-hidden shadow-lg">
@@ -92,7 +84,6 @@ const components: PortableTextComponents = {
   },
 }
 
-// 2. Pass the custom components to the PortableText component
 export default function PortableTextComponent({ value }: { value: any }) {
   return <PortableText value={value} components={components} />
 }

@@ -1,18 +1,16 @@
 // src/app/contact/page.tsx
 import { Metadata } from 'next'
 import Link from 'next/link'
-// import ContactForm from '@/components/forms/ContactForm' // <-- REMOVED
-import QuoteForm from '@/components/forms/QuoteForm'     // <-- ADDED
-import { Clock, DollarSign, Mail, Phone, Zap } from 'lucide-react' // Icons for contact details
+import QuoteForm from '@/components/forms/QuoteForm'
+import { Clock, DollarSign, Mail, Phone, Zap } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Get a Project Estimate | QuickDev Contact', // 🚀 UPGRADE: Specific, action-oriented title
-  description: 'Start your fixed-price development project today. Contact QuickDev for a free consultation or quick service purchase.', // 🚀 UPGRADE: Reiterating value proposition
+  title: 'Get a Project Estimate | QuickDev Contact',
+  description: 'Start your fixed-price development project today. Contact QuickDev for a free consultation or quick service purchase.',
 }
 
 export default function ContactPage() {
   return (
-    // UPGRADE 1: Use full width, apply consistent padding, and remove unnecessary min-height
     <main className="w-full py-20 sm:py-24 bg-white dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         
@@ -32,7 +30,7 @@ export default function ContactPage() {
         {/* --- Two-Column Contact Section --- */}
         <div className="mt-16 grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
           
-          {/* Column 1: Contact Details & Value Proposition (Credibility) */}
+          {/* Column 1: Contact Details & Value Proposition */}
           <div className="lg:order-first">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 Why Contact QuickDev?
@@ -83,13 +81,13 @@ export default function ContactPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 Send Your Project Inquiry
             </h2>
-            <QuoteForm /> {/* <-- THIS IS THE CHANGED LINE */}
+            <QuoteForm />
           </div>
 
         </div>
         {/* --- End Two-Column Contact Section --- */}
 
-        {/* Final CTA/Next Step */}
+        {/* Final CTA */}
         <div className="mt-20 text-center">
             <p className="text-lg text-gray-600 dark:text-gray-400">
                 Prefer to buy a service directly? 

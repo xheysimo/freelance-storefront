@@ -5,7 +5,6 @@ import { useState, FormEvent, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-// A small wrapper component to handle Suspense for useSearchParams
 function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -104,7 +103,6 @@ function ResetPasswordForm() {
   )
 }
 
-// Export the page with Suspense to allow useSearchParams
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>

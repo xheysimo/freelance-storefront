@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         
         sanityFileAssets.push({
           _type: 'file',
-          _key: assetDoc._id, // Use a unique key
+          _key: assetDoc._id,
           asset: {
             _type: 'reference',
             _ref: assetDoc._id,
@@ -67,8 +67,7 @@ export async function POST(request: Request) {
 
     await sanityMutationClient.create(doc)
 
-    // 4. Also send the notification email (like your contact form does)
-    // We can re-use the /api/contact logic here for efficiency
+    // 4. Also send the notification email
     await fetch(new URL('/api/contact', request.url).toString(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

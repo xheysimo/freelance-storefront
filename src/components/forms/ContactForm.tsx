@@ -38,7 +38,6 @@ export default function ContactForm() {
       }
 
       setSuccess('Message sent successfully! I will be in touch soon.')
-      // Clear the form
       setName('')
       setEmail('')
       setMessage('')
@@ -49,7 +48,6 @@ export default function ContactForm() {
     setIsLoading(false)
   }
 
-  // If successfully submitted, show a thank you message
   if (success) {
     return (
       <div className="text-center">
@@ -61,10 +59,8 @@ export default function ContactForm() {
     )
   }
 
-  // Otherwise, show the form
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-6">
-      {/* Name Field */}
       <div>
         <label
           htmlFor="name"
@@ -86,7 +82,6 @@ export default function ContactForm() {
         </div>
       </div>
 
-      {/* Email Field */}
       <div>
         <label
           htmlFor="email"
@@ -108,7 +103,6 @@ export default function ContactForm() {
         </div>
       </div>
 
-      {/* Message Field */}
       <div>
         <label
           htmlFor="message"
@@ -130,7 +124,6 @@ export default function ContactForm() {
         </div>
       </div>
 
-      {/* Submit Button & Messages */}
       <div>
         <button
           type="submit"

@@ -9,12 +9,9 @@ const fromEmail = process.env.RESEND_FROM_EMAIL
 interface EmailOptions {
   to: string
   subject: string
-  react: React.ReactElement // This type is correct
+  react: React.ReactElement
 }
 
-/**
- * A reusable utility for sending transactional emails using Resend and React Email.
- */
 export async function sendEmail({ to, subject, react }: EmailOptions) {
   if (!fromEmail) {
     console.error('Missing environment variable: RESEND_FROM_EMAIL')
@@ -26,16 +23,13 @@ export async function sendEmail({ to, subject, react }: EmailOptions) {
   }
 
   try {
-    // --- THIS IS THE FIX ---
-    // We await the render function, as it may be async (especially with React 19)
     const html = await render(react)
-    // -----------------------
 
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],
       subject: subject,
-      html: html, // This now correctly receives a string
+      html: html,
     })
 
     if (error) {

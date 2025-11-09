@@ -34,7 +34,6 @@ export const quoteType = defineType({
       initialValue: 'new',
     }),
     
-    // --- Fields for you (the admin) to fill in ---
     defineField({
       name: 'estimatedPrice',
       title: 'Estimated Price (GBP)',
@@ -49,7 +48,6 @@ export const quoteType = defineType({
       readOnly: true,
     }),
     
-    // --- Fields from the form ---
     defineField({
       name: 'projectBrief',
       title: 'Project Brief (Text)',

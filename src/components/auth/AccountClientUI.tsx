@@ -7,7 +7,6 @@ import { ShoppingBag, Settings } from 'lucide-react'
 import ManageSubscriptionButton from '@/components/auth/ManageSubscriptionButton'
 import ChangePasswordForm from '@/components/auth/ChangePasswordForm'
 
-// Define Order type locally (or import if you have it in a types file)
 interface Order {
   _id: string
   _createdAt: string
@@ -19,7 +18,6 @@ interface Order {
   subscriptionStatus?: string
 }
 
-// Helper component for the navigation links
 function NavLink({
   href,
   isActive,
@@ -44,7 +42,6 @@ function NavLink({
   )
 }
 
-// This component receives the server-fetched data as props
 export default function AccountClientUI({ orders }: { orders: Order[] }) {
   const searchParams = useSearchParams()
   const activeTab = searchParams.get('tab') || 'orders'
@@ -52,7 +49,6 @@ export default function AccountClientUI({ orders }: { orders: Order[] }) {
   return (
     <div className="lg:grid lg:grid-cols-12 lg:gap-8">
       
-      {/* 1. Navigation Column */}
       <aside className="lg:col-span-3 mb-8 lg:mb-0">
         <nav className="space-y-1">
           <NavLink href="/account" isActive={activeTab === 'orders'}>
@@ -66,10 +62,8 @@ export default function AccountClientUI({ orders }: { orders: Order[] }) {
         </nav>
       </aside>
 
-      {/* 2. Content Column */}
       <div className="lg:col-span-9">
         
-        {/* Show Order History Content */}
         {activeTab === 'orders' && (
           <div className="bg-white dark:bg-gray-950 p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
             <h2 className="text-2xl font-semibold mb-6">Order History</h2>
@@ -96,7 +90,6 @@ export default function AccountClientUI({ orders }: { orders: Order[] }) {
           </div>
         )}
 
-        {/* Show Account Settings Content */}
         {activeTab === 'settings' && (
           <div className="space-y-8">
             <div className="bg-white dark:bg-gray-950 p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">

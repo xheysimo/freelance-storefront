@@ -13,7 +13,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing paymentIntentId or serviceId' }, { status: 400 })
     }
 
-    // 1. Get customer details from Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
     const customer = await stripe.customers.retrieve(paymentIntent.customer as string) as Stripe.Customer
 
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
       oneOffStatus: 'new',
       customerName: customer.name || 'N/A',
       customerEmail: customer.email || 'N/A',
-      stripeCustomerId: customer.id, // <-- 2. ADD THE CUSTOMER ID
+      stripeCustomerId: customer.id,
     }
 
     const newDoc = await sanityMutationClient.create(doc)

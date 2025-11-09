@@ -4,22 +4,19 @@ import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import { SanityImageSource } from "@sanity/image-url/lib/types/types"
 import SanityImage from "@/components/sanity/SanityImage"
-// import { blockContentType } from "@/sanity/schemaTypes/blockContentType" // This import is unused, can be removed
 import PortableTextComponent from "@/components/sanity/PortableText"
 
-// --- 1. IMPORT LINK & ICONS ---
 import Link from "next/link"
 import { ExternalLink, Code } from "lucide-react"
 
-// 1. Define the type for a single project (unchanged)
 interface Project {
   title: string
   clientName: string
   coverImage: SanityImageSource
   summary: string
-  challenge: any // Type for blockContent
-  solution: any // Type for blockContent
-  results: any // Type for blockContent
+  challenge: any
+  solution: any
+  results: any
   liveUrl?: string
   githubUrl?: string
   seo: {
@@ -28,7 +25,6 @@ interface Project {
   }
 }
 
-// 2. Define the query to get a single project by slug (unchanged)
 const PROJECT_QUERY = `*[_type == "project" && slug.current == $slug][0]{
   title,
   clientName,
@@ -42,16 +38,15 @@ const PROJECT_QUERY = `*[_type == "project" && slug.current == $slug][0]{
   seo
 }`
 
-// 3. Generate dynamic metadata for SEO (unchanged, but includes param fix)
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string }
 }): Promise<Metadata> {
-  const resolvedParams = await params // <-- FIX
+  const resolvedParams = await params
   const result = await sanityFetch<any>({
     query: PROJECT_QUERY,
-    params: { slug: resolvedParams.slug }, // <-- FIX
+    params: { slug: resolvedParams.slug },
   })
   const project = result.data as Project | null
   if (!project) {
@@ -63,16 +58,15 @@ export async function generateMetadata({
   }
 }
 
-// 4. The page component
 export default async function ProjectPage({
   params,
 }: {
   params: { slug: string }
 }) {
-  const resolvedParams = await params // <-- FIX
+  const resolvedParams = await params
   const result = await sanityFetch<any>({
     query: PROJECT_QUERY,
-    params: { slug: resolvedParams.slug }, // <-- FIX
+    params: { slug: resolvedParams.slug },
   })
   const project = result.data as Project | null
 
@@ -81,10 +75,8 @@ export default async function ProjectPage({
   }
 
   return (
-    // --- 2. UI/UX UPGRADE: Use consistent main element styling ---
     <main className="w-full bg-white dark:bg-gray-950">
       <article className="mx-auto max-w-3xl px-6 lg:px-8 py-16 md:py-24">
-        {/* Header (unchanged, matches style) */}
         <div className="text-center">
           <p className="text-base font-semibold leading-7 text-indigo-600 dark:text-indigo-400">
             {project.clientName}
@@ -97,7 +89,6 @@ export default async function ProjectPage({
           </p>
         </div>
 
-        {/* Cover Image (unchanged) */}
         {project.coverImage && (
           <div className="relative h-96 w-full mt-12 rounded-2xl shadow-lg overflow-hidden">
             <SanityImage
@@ -108,7 +99,6 @@ export default async function ProjectPage({
           </div>
         )}
 
-        {/* --- 3. UI/UX UPGRADE: Add Project Links Section --- */}
         {(project.liveUrl || project.githubUrl) && (
           <div className="mt-12 flex items-center justify-center gap-4 border-t border-b border-gray-100 dark:border-gray-800 py-6">
             {project.liveUrl && (
@@ -134,7 +124,6 @@ export default async function ProjectPage({
           </div>
         )}
 
-        {/* Rich Content Sections (unchanged, prose is correct) */}
         <div className="prose prose-lg dark:prose-invert mt-16 mx-auto">
           {project.challenge && (
             <>

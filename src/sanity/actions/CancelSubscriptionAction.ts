@@ -4,17 +4,15 @@ import { useState } from 'react'
 
 export function CancelSubscriptionAction(props: DocumentActionProps): DocumentActionDescription | null {
   const { type, published } = props
-  const doc = published as any // Get the published document
+  const doc = published as any
   const [isCancelling, setIsCancelling] = useState(false)
   const [message, setMessage] = useState('')
 
-  // This action should only appear for 'order' documents that
-  // are subscriptions and are not already cancelled.
   if (
     type !== 'order' ||
     !doc ||
-    !doc.stripeSubscriptionId || // Must be a subscription
-    doc.subscriptionStatus === 'cancelled' // Must not be cancelled
+    !doc.stripeSubscriptionId ||
+    doc.subscriptionStatus === 'cancelled'
   ) {
     return null
   }
@@ -28,7 +26,6 @@ export function CancelSubscriptionAction(props: DocumentActionProps): DocumentAc
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Send your secret to authenticate the request
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SANITY_WEBHOOK_SECRET}`,
         },
         body: JSON.stringify({
@@ -39,8 +36,6 @@ export function CancelSubscriptionAction(props: DocumentActionProps): DocumentAc
       const data = await res.json()
       if (res.ok) {
         setMessage('Cancellation sent! Status will update shortly.')
-        // Force a re-fetch of the document
-        // The webhook will update the status, and this refetch will show it.
         props.onComplete() 
       } else {
         setMessage(`Error: ${data.error}`)
@@ -54,7 +49,7 @@ export function CancelSubscriptionAction(props: DocumentActionProps): DocumentAc
   return {
     label: isCancelling ? message : 'Cancel Stripe Subscription',
     icon: () => '❌',
-    tone: 'critical', // Makes the button red
+    tone: 'critical',
     disabled: isCancelling,
     onHandle: onHandle,
   }
